@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fief — a wallpaper that builds a kingdom around your icons</title>
+<meta name="description" content="Fief is a free living wallpaper for Windows: it reads where your desktop icons sit and grows a medieval world around them. Camps, villages, walled towns and castles rise as you group icons.">
+<meta property="og:title" content="Fief — a wallpaper that builds a kingdom around your icons">
+<meta property="og:description" content="A free living wallpaper for Windows. Group your desktop icons and watch camps grow into walled cities.">
+<meta property="og:image" content="img/hero.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#16384f">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parch: #f3ead6; --parch-2: #eadfc6; --parch-3: #e0d2b3;
+    --ink: #2b2319; --ink-2: #5d5142; --ink-3: #8a7c68;
+    --gold: #a9781f; --gold-2: #c9973a; --blue: #2f5fc4; --blue-ink: #173a86;
+    --sea: #16384f; --sea-2: #1f5673;
+    --line: rgba(43, 35, 25, .16);
+    --display: "Cinzel", "Trajan Pro", Georgia, serif;
+    --text: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+    --w: min(1160px, calc(100vw - 40px));
+    --r: 18px;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; color: var(--ink); font: 400 18px/1.55 var(--text);
+    background:
+      radial-gradient(1200px 600px at 12% -10%, rgba(255, 255, 255, .55), transparent 60%),
+      radial-gradient(900px 500px at 100% 30%, rgba(201, 151, 58, .10), transparent 60%),
+      var(--parch);
+  }
+  a { color: var(--blue-ink); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--gold-2); outline-offset: 3px; border-radius: 6px; }
+  .wrap { width: var(--w); margin: 0 auto; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: .01em; line-height: 1.12; margin: 0; text-wrap: balance; }
+  p { margin: 0; text-wrap: pretty; }
+
+  /* ---------- en-tête */
+  .top { position: sticky; top: 0; z-index: 20; background: rgba(243, 234, 214, .86); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; gap: 22px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font: 700 22px/1 var(--display); letter-spacing: .06em; }
+  .brand svg { width: 30px; height: 30px; flex: none; }
+  .top nav { display: flex; gap: 22px; margin-left: auto; }
+  .top nav a { color: var(--ink-2); text-decoration: none; font-weight: 500; font-size: 16px; }
+  .top nav a:hover { color: var(--ink); }
+  .lang { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .lang button { font: 500 14px/1 var(--text); padding: 7px 11px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+  .lang button[aria-pressed=true] { background: var(--ink); color: var(--parch); }
+  @media (max-width: 760px) { .top nav { display: none; } .lang { margin-left: auto; } }
+
+  /* ---------- boutons */
+  .btn { display: inline-flex; align-items: center; gap: 10px; font: 700 17px/1 var(--text); padding: 15px 22px; border-radius: 12px; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: transform .12s ease, box-shadow .12s ease; }
+  .btn svg { width: 19px; height: 19px; flex: none; }
+  .btn.primary { background: linear-gradient(180deg, #d4a548, #b3812a); color: #241a07; box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 8px 22px rgba(60, 40, 5, .28); border-color: #8d6418; }
+  .btn.ghost { background: rgba(255, 255, 255, .5); color: var(--ink); border-color: var(--line); }
+  .btn.onsea { background: rgba(10, 26, 38, .55); color: #fff; border-color: rgba(255, 255, 255, .28); backdrop-filter: blur(6px); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  /* ---------- démo en tête de page */
+  .hero { padding: 18px 0 0; position: relative; }
+  .stage { position: relative; height: min(84vh, 860px); min-height: 480px; border-radius: 26px; overflow: hidden; background: var(--sea) url(img/hero.jpg) center / cover; box-shadow: 0 30px 70px -30px rgba(20, 30, 40, .65), 0 0 0 1px rgba(43, 35, 25, .25); }
+  .stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+  .veil { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(80% 70% at 100% 0%, rgba(8, 24, 36, .82), rgba(8, 24, 36, .35) 45%, transparent 70%); }
+  .pitch { position: absolute; z-index: 2; right: clamp(18px, 4vw, 54px); top: calc(18px + clamp(18px, 5vh, 54px)); width: min(560px, calc(100% - 36px)); color: #fff; text-align: right; pointer-events: none; }
+  .pitch h1 { font-size: clamp(28px, 4.4vw, 56px); font-weight: 700; text-shadow: 0 2px 18px rgba(0, 0, 0, .55); }
+  .pitch h1 em { font-style: normal; color: #f1cd7c; }
+  .pitch p { margin: 16px 0 0 auto; max-width: 440px; font-size: clamp(16px, 1.5vw, 20px); color: rgba(255, 255, 255, .92); text-shadow: 0 1px 10px rgba(0, 0, 0, .6); }
+  .pitch .cta { margin-top: 24px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; pointer-events: auto; }
+  .chip { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; font: 500 15px/1 var(--text); color: #fff; background: rgba(10, 26, 38, .62); border: 1px solid rgba(255, 255, 255, .22); padding: 9px 15px; border-radius: 999px; pointer-events: none; white-space: nowrap; backdrop-filter: blur(6px); }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; background: #7fe08a; box-shadow: 0 0 0 4px rgba(127, 224, 138, .22); }
+  @media (max-width: 700px) {
+    /* sur téléphone, le titre passe au-dessus de la démo au lieu de la recouvrir */
+    .pitch { position: static; width: auto; color: var(--ink); text-align: left; pointer-events: auto; padding: 8px 2px 22px; }
+    .pitch h1 { text-shadow: none; font-size: clamp(30px, 8.6vw, 40px); }
+    .pitch h1 em { color: var(--gold); }
+    .pitch p { margin: 12px 0 0; color: var(--ink-2); text-shadow: none; font-size: 18px; }
+    .pitch .cta { justify-content: flex-start; margin-top: 18px; }
+    .pitch .cta .onsea { display: none; }
+    .veil { display: none; }
+    .stage { height: 58vh; min-height: 380px; border-radius: 18px; }
+    .chip { font-size: 14px; }
+  }
+
+  /* ---------- sections */
+  section { padding: clamp(56px, 9vw, 110px) 0 0; }
+  .eyebrow { display: flex; align-items: center; gap: 12px; font: 600 13px/1 var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+  .eyebrow::before { content: ""; width: 34px; height: 1px; background: currentColor; }
+  h2 { font-size: clamp(28px, 3.6vw, 44px); }
+  .lede { margin-top: 14px; max-width: 62ch; color: var(--ink-2); font-size: clamp(18px, 1.6vw, 21px); }
+
+  .statement { padding-top: clamp(40px, 6vw, 70px); }
+  .statement p { font: 500 clamp(22px, 3vw, 36px)/1.25 var(--display); max-width: 26ch; }
+  .statement p span { color: var(--ink-3); }
+
+  /* ---------- rangs de colonie */
+  .tiers { margin-top: 34px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+  .tier { background: linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .35)); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; }
+  .tier .scene { aspect-ratio: 4 / 3; background: radial-gradient(120% 90% at 50% 45%, #3aa0bd, #1f6f95 70%, #185a7c); display: block; width: 100%; }
+  .tier .body { padding: 16px 16px 18px; }
+  .tier .count { font: 600 12px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  .tier h3 { font-size: 21px; margin-top: 8px; }
+  .tier p { margin-top: 6px; font-size: 16px; line-height: 1.4; color: var(--ink-2); }
+  @media (max-width: 1000px) { .tiers { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 620px) { .tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tier:last-child { grid-column: 1 / -1; } }
+
+  .wide { margin-top: 30px; border-radius: 22px; overflow: hidden; border: 1px solid rgba(43, 35, 25, .25); box-shadow: 0 24px 60px -34px rgba(20, 30, 40, .6); background: var(--sea); }
+  .wide img { display: block; width: 100%; height: auto; }
+  figure { margin: 0; }
+  figcaption { font-size: 15px; color: var(--ink-3); margin-top: 10px; }
+
+  /* ---------- atouts */
+  .feats { margin-top: 34px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .feat { position: relative; padding: 26px 26px 28px; border-radius: var(--r); border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255, 255, 255, .62), rgba(255, 255, 255, .28)); }
+  .feat::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(169, 120, 31, .22); border-radius: 13px; pointer-events: none; }
+  .feat svg { width: 34px; height: 34px; color: var(--gold); }
+  .feat h3 { font-size: 23px; margin-top: 14px; }
+  .feat p { margin-top: 8px; color: var(--ink-2); }
+  @media (max-width: 760px) { .feats { grid-template-columns: 1fr; } }
+
+  /* ---------- cartes */
+  .maps { margin-top: 34px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .map { border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .35)); }
+  .map img { display: block; width: 100%; height: auto; aspect-ratio: 1100 / 756; object-fit: cover; background: var(--sea); }
+  .map div { padding: 16px 18px 18px; }
+  .map h3 { font-size: 22px; }
+  .map p { font-size: 16px; line-height: 1.4; margin-top: 6px; color: var(--ink-2); }
+  @media (max-width: 860px) { .maps { grid-template-columns: 1fr; } }
+
+  /* ---------- téléchargement */
+  .get { margin-top: clamp(56px, 9vw, 110px); background: linear-gradient(160deg, #1b4763, #12303f); color: #f4ecd9; border-radius: 26px; padding: clamp(28px, 5vw, 56px); display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(24px, 4vw, 56px); align-items: center; box-shadow: 0 30px 70px -36px rgba(20, 30, 40, .8); }
+  .get .eyebrow { color: #e8c675; }
+  .get h2 { color: #fff; }
+  .get .lede { color: rgba(244, 236, 217, .82); }
+  .get .actions { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .get .fine { margin-top: 16px; font-size: 15px; color: rgba(244, 236, 217, .7); }
+  .get ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .get li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: start; font-size: 17px; color: rgba(244, 236, 217, .92); }
+  .get li svg { width: 22px; height: 22px; color: #e8c675; margin-top: 2px; }
+  @media (max-width: 860px) { .get { grid-template-columns: 1fr; } }
+
+  /* ---------- questions */
+  .faq { margin-top: 26px; border-top: 1px solid var(--line); }
+  details { border-bottom: 1px solid var(--line); }
+  summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 2px; font: 600 clamp(18px, 1.7vw, 21px)/1.3 var(--text); }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font: 400 26px/1 var(--text); color: var(--gold); flex: none; transition: transform .15s; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { padding: 0 2px 20px; max-width: 74ch; color: var(--ink-2); }
+
+  footer { margin-top: clamp(56px, 9vw, 110px); border-top: 1px solid var(--line); padding: 28px 0 44px; color: var(--ink-3); font-size: 15px; }
+  footer .wrap { display: flex; gap: 14px 28px; flex-wrap: wrap; justify-content: space-between; }
+  footer p { max-width: 70ch; }
+
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn, summary::after { transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Fief">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 3h26v12c0 9-9 13-13 15C12 28 3 24 3 15z" fill="#2f5fc4" stroke="#18306e" stroke-width="1.6"/><path d="M11 12h10v12H11zM9.5 8h3v5h-3zM14.5 8h3v5h-3zM19.5 8h3v5h-3z" fill="#ece6d6"/><path d="M14.2 18h3.6v6h-3.6z" fill="#3c2a1a"/></svg>
+      FIEF
+    </a>
+    <nav aria-label="Sections">
+      <a href="#tiers" data-i18n="nav.tiers"></a>
+      <a href="#world" data-i18n="nav.world"></a>
+      <a href="#maps" data-i18n="nav.maps"></a>
+      <a href="#faq" data-i18n="nav.faq"></a>
+      <a href="#get" data-i18n="nav.get"></a>
+    </nav>
+    <div class="lang" role="group" aria-label="Language">
+      <button data-lang="en">EN</button><button data-lang="fr">FR</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero wrap">
+    <div class="pitch">
+      <h1 data-i18n-html="hero.title"></h1>
+      <p data-i18n="hero.sub"></p>
+      <div class="cta">
+        <a class="btn primary" href="#get"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="hero.cta"></span></a>
+        <a class="btn onsea" href="#tiers" data-i18n="hero.more"></a>
+      </div>
+    </div>
+    <div class="stage" id="stage">
+      <iframe id="demo" title="" loading="eager"></iframe>
+      <div class="veil"></div>
+      <div class="chip"><i></i><span data-i18n="hero.chip"></span></div>
+    </div>
+  </div>
+
+  <section class="statement">
+    <div class="wrap"><p data-i18n-html="statement"></p></div>
+  </section>
+
+  <section id="tiers">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="tiers.eyebrow"></div>
+      <h2 data-i18n="tiers.title"></h2>
+      <p class="lede" data-i18n="tiers.lede"></p>
+      <div class="tiers">
+        <article class="tier"><canvas class="scene" data-tier="0" role="img"></canvas><div class="body"><div class="count" data-i18n="tier0.count"></div><h3 data-i18n="tier0.name"></h3><p data-i18n="tier0.text"></p></div></article>
+        <article class="tier"><canvas class="scene" data-tier="1" role="img"></canvas><div class="body"><div class="count" data-i18n="tier1.count"></div><h3 data-i18n="tier1.name"></h3><p data-i18n="tier1.text"></p></div></article>
+        <article class="tier"><canvas class="scene" data-tier="2" role="img"></canvas><div class="body"><div class="count" data-i18n="tier2.count"></div><h3 data-i18n="tier2.name"></h3><p data-i18n="tier2.text"></p></div></article>
+        <article class="tier"><canvas class="scene" data-tier="3" role="img"></canvas><div class="body"><div class="count" data-i18n="tier3.count"></div><h3 data-i18n="tier3.name"></h3><p data-i18n="tier3.text"></p></div></article>
+        <article class="tier"><canvas class="scene" data-tier="4" role="img"></canvas><div class="body"><div class="count" data-i18n="tier4.count"></div><h3 data-i18n="tier4.name"></h3><p data-i18n="tier4.text"></p></div></article>
+      </div>
+      <figure>
+        <div class="wide"><img src="img/tiers.jpg" width="1900" height="800" loading="lazy" alt="" data-i18n-alt="tiers.alt"></div>
+        <figcaption data-i18n="tiers.caption"></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="world">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="world.eyebrow"></div>
+      <h2 data-i18n="world.title"></h2>
+      <div class="feats">
+        <article class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l-2 3 2 3M19 9l2 3-2 3M9 5l3-2 3 2M9 19l3 2 3-2M3 12h18M12 3v18"/></svg>
+          <h3 data-i18n="f1.title"></h3><p data-i18n="f1.text"></p>
+        </article>
+        <article class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10l4-3 4 3v10M12 20v-7l4-3 4 3v7M2 20h20M7 13v2M16 15v2M8 4c1-1 2 1 3 0"/></svg>
+          <h3 data-i18n="f2.title"></h3><p data-i18n="f2.text"></p>
+        </article>
+        <article class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></svg>
+          <h3 data-i18n="f3.title"></h3><p data-i18n="f3.text"></p>
+        </article>
+        <article class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          <h3 data-i18n="f4.title"></h3><p data-i18n="f4.text"></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="maps">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="maps.eyebrow"></div>
+      <h2 data-i18n="maps.title"></h2>
+      <p class="lede" data-i18n="maps.lede"></p>
+      <div class="maps">
+        <article class="map"><img src="img/map-islands.jpg" width="1100" height="756" loading="lazy" alt=""><div><h3 data-i18n="map1.name"></h3><p data-i18n="map1.text"></p></div></article>
+        <article class="map"><img src="img/map-coasts.jpg" width="1100" height="756" loading="lazy" alt=""><div><h3 data-i18n="map2.name"></h3><p data-i18n="map2.text"></p></div></article>
+        <article class="map"><img src="img/map-mainland.jpg" width="1100" height="756" loading="lazy" alt=""><div><h3 data-i18n="map3.name"></h3><p data-i18n="map3.text"></p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="get" id="get">
+      <div>
+        <div class="eyebrow" data-i18n="get.eyebrow"></div>
+        <h2 data-i18n="get.title"></h2>
+        <p class="lede" data-i18n="get.lede"></p>
+        <div class="actions">
+          <a class="btn primary" id="dl" href="download/Fief-win-x64.zip" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="get.cta"></span></a>
+          <a class="btn onsea" id="gh" href="#" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><span data-i18n="get.source"></span></a>
+        </div>
+        <p class="fine" data-i18n="get.fine"></p>
+      </div>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span data-i18n="get.b1"></span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span data-i18n="get.b2"></span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span data-i18n="get.b3"></span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span data-i18n="get.b4"></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="faq.eyebrow"></div>
+      <h2 data-i18n="faq.title"></h2>
+      <div class="faq">
+        <details><summary data-i18n="q1"></summary><p data-i18n="a1"></p></details>
+        <details><summary data-i18n="q2"></summary><p data-i18n="a2"></p></details>
+        <details><summary data-i18n="q3"></summary><p data-i18n="a3"></p></details>
+        <details><summary data-i18n="q4"></summary><p data-i18n="a4"></p></details>
+        <details><summary data-i18n="q5"></summary><p data-i18n="a5"></p></details>
+        <details><summary data-i18n="q6"></summary><p data-i18n="a6"></p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p data-i18n-html="foot.credit"></p>
+    <p data-i18n="foot.legal"></p>
+  </div>
+</footer>
+
+<script>
+// Adresse du dépôt GitHub : laisser vide tant qu'il n'existe pas.
+const REPO_URL = 'https://github.com/adchouchet/fief';
+
+const STR = {
+  en: {
+    'doc.title': 'Fief — a wallpaper that builds a kingdom around your icons',
+    'nav.tiers': 'Settlements', 'nav.world': 'How it works', 'nav.maps': 'Maps', 'nav.faq': 'Questions', 'nav.get': 'Download',
+    'hero.title': 'A wallpaper that builds a <em>kingdom</em> around your icons',
+    'hero.sub': 'Fief reads where your desktop icons sit and grows a living medieval world around them.',
+    'hero.cta': 'Download for Windows', 'hero.more': 'See how it grows',
+    'hero.chip': 'Live demo: drag the icons',
+    'demo.title': 'Live demo of the Fief wallpaper',
+    'statement': 'No two desktops are alike. <span>So no two kingdoms are either.</span>',
+    'tiers.eyebrow': 'Settlements', 'tiers.title': 'From a campfire to a walled city',
+    'tiers.lede': 'Every group of icons founds a settlement on its own island. The more icons you gather, the further it grows.',
+    'tier0.count': '1–2 icons', 'tier0.name': 'Camp', 'tier0.text': 'A tent, a campfire, an islet of your own.',
+    'tier1.count': '3–5 icons', 'tier1.name': 'Hamlet', 'tier1.text': 'A town hall, cottages, fields and a jetty.',
+    'tier2.count': '6–11 icons', 'tier2.name': 'Village', 'tier2.text': 'Windmill, market, forge, mine and a chapel.',
+    'tier3.count': '12–19 icons', 'tier3.name': 'Walled town', 'tier3.text': 'A palisade with watchtowers, gates and a barracks.',
+    'tier4.count': '20+ icons', 'tier4.name': 'City', 'tier4.text': 'Stone ramparts and a castle keep.',
+    'tiers.alt': 'Five settlements side by side on the same shore, from a single tent to a stone-walled city with a castle.',
+    'tiers.caption': 'One, four, seven, thirteen and twenty-one icons: the same shore, five ranks of settlement.',
+    'world.eyebrow': 'How it works', 'world.title': 'A world that answers to your desktop',
+    'f1.title': 'It follows your icons', 'f1.text': 'Move, add or delete an icon and the coastline redraws itself. Buildings no longer needed are pulled down, new ones rise from their scaffolding, walls shift to fit.',
+    'f2.title': 'It is alive', 'f2.text': 'Woodcutters, farmers, miners and builders go about their work. Sheep graze, fishing boats head out, merchant ships cross the open sea, smoke drifts from the forge.',
+    'f3.title': 'It stays out of your way', 'f3.text': 'Fief pauses by itself as soon as your windows cover the desktop. Choose 15, 30 or 60 frames per second, and which screens it covers.',
+    'f4.title': 'It never looks at your files', 'f4.text': 'Only the position of each icon is read: never names, never contents. Nothing leaves your computer, and there is no account.',
+    'maps.eyebrow': 'Maps', 'maps.title': 'Three ways to lay out the realm',
+    'maps.lede': 'Pick the map, the world seed, how wild the coast is, how dense the forests are, and your banner colour.',
+    'map1.name': 'Islands', 'map1.text': 'Sea everywhere. Each group of icons raises its own island.',
+    'map2.name': 'Coasts', 'map2.text': 'Land and sea intertwined. Icons win ground back from the water.',
+    'map3.name': 'Mainland', 'map3.text': 'One great forest. Icons open clearings in it.',
+    'get.eyebrow': 'Download', 'get.title': 'Free, and yours to tinker with',
+    'get.lede': 'Unzip, run Fief.exe, and the world appears behind your icons. Its shield icon sits near the clock for settings, pause and quit.',
+    'get.cta': 'Download Fief for Windows', 'get.source': 'Source code',
+    'get.fine': 'Windows 10 or 11, 64-bit. The program is not signed yet, so Windows may show a "Windows protected your PC" notice the first time: choose "More info", then "Run anyway".',
+    'get.b1': 'No installer, no account, no ads',
+    'get.b2': 'Works across several screens, or on just one',
+    'get.b3': 'English and French, following Windows',
+    'get.b4': 'Open source under the GPL-3.0 licence',
+    'faq.eyebrow': 'Questions', 'faq.title': 'Good to know',
+    'q1': 'Will it slow my PC down?',
+    'a1': 'It is a light scene drawn by the graphics card, capped at 30 frames per second by default. When maximised or full-screen windows cover every screen Fief occupies, or when the session is locked, it stops drawing entirely.',
+    'q2': 'Does it read my files?',
+    'a2': 'No. Fief asks Windows only for the rectangle each desktop icon occupies. It never reads file names or contents, and it makes no network connection.',
+    'q3': 'My antivirus or Windows shows a warning. Is it safe?',
+    'a3': 'Fief is not code-signed yet, which is what triggers the Windows SmartScreen notice. Some antivirus tools are also wary because Fief asks the Windows desktop for icon positions. The full source code is public, so anyone can check what it does or build it themselves.',
+    'q4': 'Does it work with several screens?',
+    'a4': 'Yes. By default one continuous world spans all screens. You can also restrict Fief to a single screen and keep another wallpaper on the others.',
+    'q5': 'Can I keep Wallpaper Engine or another animated wallpaper?',
+    'a5': 'Yes. Fief places itself in front of other animated wallpapers on the screens it covers. To avoid working the graphics card twice, pause the other one on those screens.',
+    'q6': 'How do I remove it?',
+    'a6': 'Right-click the shield icon near the clock and choose Quit: your previous wallpaper comes back. Then delete the folder. Settings live in %LOCALAPPDATA%\\Fief.',
+    'foot.credit': 'The idea of a wallpaper that grows around desktop icons comes from <a href="https://deskland.app/">Deskland</a>. Fief takes up the principle; its code and artwork are original.',
+    'foot.legal': 'Fief is an independent project, not affiliated with any game publisher.',
+  },
+  fr: {
+    'doc.title': 'Fief — un fond d\'écran qui bâtit un royaume autour de vos icônes',
+    'nav.tiers': 'Colonies', 'nav.world': 'Fonctionnement', 'nav.maps': 'Cartes', 'nav.faq': 'Questions', 'nav.get': 'Télécharger',
+    'hero.title': 'Un fond d\'écran qui bâtit un <em>royaume</em> autour de vos icônes',
+    'hero.sub': 'Fief lit la position de vos icônes de bureau et fait pousser autour d\'elles un monde médiéval vivant.',
+    'hero.cta': 'Télécharger pour Windows', 'hero.more': 'Voir comment il grandit',
+    'hero.chip': 'Démo en direct : déplacez les icônes',
+    'demo.title': 'Démo en direct du fond d\'écran Fief',
+    'statement': 'Aucun bureau ne ressemble à un autre. <span>Aucun royaume non plus.</span>',
+    'tiers.eyebrow': 'Colonies', 'tiers.title': 'Du feu de camp à la cité fortifiée',
+    'tiers.lede': 'Chaque groupe d\'icônes fonde une colonie sur son île. Plus vous regroupez d\'icônes, plus elle grandit.',
+    'tier0.count': '1 à 2 icônes', 'tier0.name': 'Campement', 'tier0.text': 'Une tente, un feu de camp, un îlot rien qu\'à vous.',
+    'tier1.count': '3 à 5 icônes', 'tier1.name': 'Hameau', 'tier1.text': 'Un forum, des chaumières, des champs et un ponton.',
+    'tier2.count': '6 à 11 icônes', 'tier2.name': 'Village', 'tier2.text': 'Moulin, marché, forge, mine et chapelle.',
+    'tier3.count': '12 à 19 icônes', 'tier3.name': 'Bourg', 'tier3.text': 'Une palissade, ses tours de guet, ses portes, une caserne.',
+    'tier4.count': '20 icônes et plus', 'tier4.name': 'Cité', 'tier4.text': 'Des remparts de pierre et un château.',
+    'tiers.alt': 'Cinq colonies côte à côte sur le même rivage, d\'une simple tente à une cité aux remparts de pierre avec son château.',
+    'tiers.caption': 'Une, quatre, sept, treize et vingt et une icônes : le même rivage, cinq rangs de colonie.',
+    'world.eyebrow': 'Fonctionnement', 'world.title': 'Un monde qui répond à votre bureau',
+    'f1.title': 'Il suit vos icônes', 'f1.text': 'Déplacez, ajoutez ou supprimez une icône : la côte se redessine. Les bâtiments devenus inutiles sont démolis, les nouveaux sortent de terre avec leur chantier, les murs s\'ajustent.',
+    'f2.title': 'Il vit', 'f2.text': 'Bûcherons, fermiers, mineurs et bâtisseurs vaquent à leurs tâches. Les moutons broutent, les barques partent pêcher, les navires marchands croisent au large, la fumée monte de la forge.',
+    'f3.title': 'Il se fait oublier', 'f3.text': 'Fief se met en pause tout seul dès que vos fenêtres couvrent le bureau. Choisissez 15, 30 ou 60 images par seconde, et les écrans qu\'il occupe.',
+    'f4.title': 'Il ne regarde jamais vos fichiers', 'f4.text': 'Seule la position de chaque icône est lue : jamais les noms, jamais les contenus. Rien ne quitte votre ordinateur, et il n\'y a pas de compte à créer.',
+    'maps.eyebrow': 'Cartes', 'maps.title': 'Trois façons de dessiner le royaume',
+    'maps.lede': 'Choisissez la carte, la graine du monde, la sinuosité des côtes, la densité des forêts et la couleur de votre bannière.',
+    'map1.name': 'Archipel', 'map1.text': 'La mer partout. Chaque groupe d\'icônes fait surgir son île.',
+    'map2.name': 'Côtes', 'map2.text': 'Terres et mers mêlées. Les icônes gagnent du terrain sur l\'eau.',
+    'map3.name': 'Continent', 'map3.text': 'Une grande forêt. Les icônes y ouvrent des clairières.',
+    'get.eyebrow': 'Télécharger', 'get.title': 'Gratuit, et libre de le bricoler',
+    'get.lede': 'Décompressez, lancez Fief.exe, et le monde apparaît derrière vos icônes. Son écu se loge près de l\'horloge pour les réglages, la pause et la fermeture.',
+    'get.cta': 'Télécharger Fief pour Windows', 'get.source': 'Code source',
+    'get.fine': 'Windows 10 ou 11, 64 bits. Le programme n\'est pas encore signé : Windows peut afficher « Windows a protégé votre ordinateur » au premier lancement. Choisissez « Informations complémentaires », puis « Exécuter quand même ».',
+    'get.b1': 'Sans installateur, sans compte, sans publicité',
+    'get.b2': 'Sur plusieurs écrans, ou sur un seul',
+    'get.b3': 'En français et en anglais, selon la langue de Windows',
+    'get.b4': 'Code ouvert, sous licence GPL-3.0',
+    'faq.eyebrow': 'Questions', 'faq.title': 'Bon à savoir',
+    'q1': 'Est-ce que ça ralentit mon ordinateur ?',
+    'a1': 'C\'est une scène légère, dessinée par la carte graphique et limitée à 30 images par seconde par défaut. Quand des fenêtres agrandies ou en plein écran couvrent tous les écrans occupés par Fief, ou quand la session est verrouillée, il cesse complètement de dessiner.',
+    'q2': 'Lit-il mes fichiers ?',
+    'a2': 'Non. Fief demande seulement à Windows le rectangle occupé par chaque icône du bureau. Il ne lit ni les noms ni les contenus, et n\'ouvre aucune connexion réseau.',
+    'q3': 'Mon antivirus ou Windows affiche un avertissement. Est-ce sûr ?',
+    'a3': 'Fief n\'est pas encore signé numériquement, ce qui déclenche l\'avis de Windows SmartScreen. Certains antivirus se méfient aussi parce que Fief demande au bureau de Windows la position des icônes. Tout le code source est public : chacun peut vérifier ce qu\'il fait, ou le compiler soi-même.',
+    'q4': 'Fonctionne-t-il avec plusieurs écrans ?',
+    'a4': 'Oui. Par défaut, un seul monde continu s\'étend sur tous les écrans. Vous pouvez aussi limiter Fief à un seul écran et garder un autre fond sur les autres.',
+    'q5': 'Puis-je garder Wallpaper Engine ou un autre fond animé ?',
+    'a5': 'Oui. Fief se place devant les autres fonds animés sur les écrans qu\'il couvre. Pour ne pas faire travailler la carte graphique deux fois, mettez l\'autre en pause sur ces écrans.',
+    'q6': 'Comment le retirer ?',
+    'a6': 'Clic droit sur l\'écu près de l\'horloge, puis Quitter : votre fond d\'origine revient. Supprimez ensuite le dossier. Les réglages sont dans %LOCALAPPDATA%\\Fief.',
+    'foot.credit': 'L\'idée d\'un fond d\'écran qui pousse autour des icônes vient de <a href="https://deskland.app/">Deskland</a>. Fief en reprend le principe ; son code et ses dessins sont originaux.',
+    'foot.legal': 'Fief est un projet indépendant, sans lien avec un éditeur de jeux.',
+  },
+};
+
+let lang = 'en';
+try { lang = localStorage.getItem('fief.lang') || ''; } catch {}
+if (lang !== 'fr' && lang !== 'en') lang = (navigator.language || 'en').toLowerCase().startsWith('fr') ? 'fr' : 'en';
+
+const demo = document.getElementById('demo');
+function applyLang(reloadDemo) {
+  const t = STR[lang];
+  document.documentElement.lang = lang;
+  document.title = t['doc.title'];
+  for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t[el.dataset.i18n] || '';
+  for (const el of document.querySelectorAll('[data-i18n-html]')) el.innerHTML = t[el.dataset.i18nHtml] || '';
+  for (const el of document.querySelectorAll('[data-i18n-alt]')) el.alt = t[el.dataset.i18nAlt] || '';
+  for (const b of document.querySelectorAll('.lang button')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+  document.querySelectorAll('.scene').forEach((c, i) => c.setAttribute('aria-label', t['tier' + i + '.name'] + ' — ' + t['tier' + i + '.text']));
+  demo.title = t['demo.title'];
+  if (reloadDemo) demo.src = 'demo/index.html?layout=hero&quiet=1&lang=' + lang;
+}
+for (const b of document.querySelectorAll('.lang button')) b.addEventListener('click', () => {
+  if (b.dataset.lang === lang) return;
+  lang = b.dataset.lang;
+  try { localStorage.setItem('fief.lang', lang); } catch {}
+  applyLang(true);
+});
+applyLang(true);
+
+if (REPO_URL) { const gh = document.getElementById('gh'); gh.href = REPO_URL; gh.hidden = false; }
+
+// la démo cesse de dessiner quand elle sort de l'écran
+let demoVisible = true;
+const pauseDemo = (paused) => { try { demo.contentWindow.postMessage({ type: 'pause', paused }, '*'); } catch {} };
+new IntersectionObserver((entries) => { demoVisible = entries[0].isIntersecting; pauseDemo(!demoVisible); }, { threshold: 0.05 }).observe(document.getElementById('stage'));
+demo.addEventListener('load', () => { if (!demoVisible) pauseDemo(true); });
+</script>
+
+<script type="module">
+// Les cinq petites scènes des rangs de colonie sont dessinées avec les mêmes
+// éléments que le fond d'écran.
+import { buildSprites, drawSprite } from './demo/js/sprites.js';
+
+const LW = 200, LH = 150; // taille logique d'une scène
+const dpr = Math.min(2, window.devicePixelRatio || 1);
+const K = 1.6 * dpr;
+
+function sails(c, x, y) {
+  c.save(); c.translate(x - 5, y - 21); c.scale(0.82, 1);
+  for (let k = 0; k < 4; k++) {
+    c.save(); c.rotate(0.5 + (k * Math.PI) / 2);
+    c.fillStyle = '#5a3d22'; c.fillRect(-0.5, -14, 1, 14);
+    c.fillStyle = 'rgba(240,232,208,.95)'; c.fillRect(0.5, -14, 3.6, 10);
+    c.strokeStyle = 'rgba(90,61,34,.7)'; c.lineWidth = 0.5; c.strokeRect(0.5, -14, 3.6, 10);
+    c.restore();
+  }
+  c.fillStyle = '#3d2814'; c.beginPath(); c.arc(0, 0, 1.5, 0, 7); c.fill();
+  c.restore();
+}
+
+function scene(canvas, items) {
+  canvas.width = Math.round(LW * K); canvas.height = Math.round(LH * K);
+  const c = canvas.getContext('2d');
+  c.setTransform(K, 0, 0, K, 0, 0);
+  // l'île : écume, sable, herbe
+  const ell = (rx, ry, fill) => { c.fillStyle = fill; c.beginPath(); c.ellipse(100, 90, rx, ry, 0, 0, 7); c.fill(); };
+  ell(97, 53, 'rgba(255,255,255,.28)'); ell(93, 50, 'rgba(125,215,205,.55)');
+  ell(88, 46, '#e3d3a4'); ell(82, 41.5, '#7aa646');
+  const g = c.createRadialGradient(80, 78, 6, 100, 92, 86);
+  g.addColorStop(0, 'rgba(140,180,80,.5)'); g.addColorStop(1, 'rgba(70,120,50,.35)');
+  ell(82, 41.5, g);
+  const list = items.slice().sort((a, b) => (a.flat ? -1e3 : a.y) - (b.flat ? -1e3 : b.y));
+  for (const it of list) if (it.flat) drawSprite(c, it.e.s, it.x, it.y);
+  c.globalAlpha = 0.22;
+  for (const it of list) if (it.e.sh) drawSprite(c, it.e.sh, it.x, it.y);
+  c.globalAlpha = 1;
+  for (const it of list) { if (!it.flat) drawSprite(c, it.e.s, it.x, it.y); if (it.sails) sails(c, it.x, it.y); }
+}
+
+function draw() {
+  const S = buildSprites('#2f5fc4', K), b = S.b;
+  const at = (e, x, y, extra) => ({ e, x, y, ...extra });
+  const wall = [];
+  for (let i = 0; i < 9; i++) wall.push(at(i === 1 || i === 7 ? b.towerWood : i === 4 ? b.gateWoodL : b.wallWood, 44 + 12 * i, 80 + 6 * i));
+  const scenes = [
+    [at(b.tent, 86, 92), at(b.tent, 124, 82), at(b.campfire, 110, 104), at(S.trees[1], 46, 96), at(S.bush, 152, 100), at(S.pines[0], 160, 84)],
+    [at(b.farm[0], 150, 104, { flat: true }), at(b.tc, 92, 94), at(b.house[0], 34, 100), at(S.trees[3], 166, 82), at(b.haystack, 128, 118)],
+    [at(b.farm[1], 118, 112, { flat: true }), at(b.mill, 56, 96, { sails: true }), at(b.house[2], 150, 86), at(b.market, 104, 78), at(b.well, 160, 108), at(S.trees[0], 28, 92)],
+    [...wall, at(b.house[1], 112, 70), at(b.house[3], 148, 88), at(b.barracks, 66, 62), at(S.trees[2], 30, 104), at(S.trees[4], 172, 98)],
+    [at(b.castle, 100, 106)],
+  ];
+  document.querySelectorAll('.scene').forEach((cv) => scene(cv, scenes[Number(cv.dataset.tier)]));
+}
+
+// après le premier affichage, pour ne pas retarder la page
+(window.requestIdleCallback || ((f) => setTimeout(f, 250)))(draw);
+</script>
+</body>
+</html>

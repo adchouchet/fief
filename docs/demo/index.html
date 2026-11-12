@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fief</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #124a6d; }
+  canvas { position: fixed; left: 0; top: 0; display: block; }
+  #fog { width: 100vw; height: 100vh; pointer-events: none; }
+  #static, #dynamic { pointer-events: none; }
+  #desk { position: fixed; inset: 0; }
+</style>
+</head>
+<body>
+<canvas id="ground"></canvas>
+<canvas id="static"></canvas>
+<canvas id="dynamic"></canvas>
+<canvas id="fog"></canvas>
+<div id="desk"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

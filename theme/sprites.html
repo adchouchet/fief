@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Fief · planche des éléments</title>
+<style>
+  body { margin: 0; background: #6f9a3f; font: 12px "Segoe UI", Arial, sans-serif; color: #fff; }
+  canvas { display: block; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { buildSprites, drawSprite } from './js/sprites.js';
+const t0 = performance.now();
+const S = buildSprites('#2f5fc4');
+const ms = Math.round(performance.now() - t0);
+const Z = Number(new URLSearchParams(location.search).get('z') || 3);
+const items = [];
+const add = (name, e) => { if (e && e.s) items.push([name, e]); };
+S.trees.forEach((e, i) => add('chêne ' + i, e));
+S.pines.forEach((e, i) => add('pin ' + i, e));
+S.stone.forEach((e, i) => add('pierre ' + i, e));
+S.gold.forEach((e, i) => add('or ' + i, e));
+add('buisson', S.bush); add('souche', S.stump);
+for (const [k, v] of Object.entries(S.b)) { if (Array.isArray(v)) v.forEach((e, i) => add(k + ' ' + i, e)); else add(k, v); }
+for (const [k, v] of Object.entries(S.found)) { add('fondation ' + k, v.foundation); add('chantier ' + k, v.scaffold); }
+
+const only = new URLSearchParams(location.search).get('only');
+const list = only ? items.filter(([n]) => n.includes(only)) : items;
+const W = 1560 / Z * 1;
+const c = document.getElementById('c');
+// mise en page simple en lignes
+let x = 10, y = 10, rowH = 0;
+const pos = [];
+for (const [name, e] of list) {
+  const w = Math.max(e.s.w, e.sh ? e.sh.w : 0) + 26, h = e.s.h + 26;
+  if (x + w > W) { x = 10; y += rowH; rowH = 0; }
+  pos.push([name, e, x, y, w, h]);
+  x += w; rowH = Math.max(rowH, h);
+}
+c.width = W; c.height = y + rowH + 20;
+c.style.width = c.width * Z + 'px'; c.style.height = c.height * Z + 'px';
+const g = c.getContext('2d');
+g.fillStyle = '#6f9a3f'; g.fillRect(0, 0, c.width, c.height);
+for (const [name, e, px, py, w, h] of pos) {
+  const ax = px + 8 + e.s.ax, ay = py + 6 + e.s.ay;
+  if (e.sh) { g.globalAlpha = 0.24; drawSprite(g, e.sh, ax, ay); g.globalAlpha = 1; }
+  drawSprite(g, e.s, ax, ay);
+  g.fillStyle = 'rgba(0,0,0,.6)'; g.font = '7px Arial'; g.fillText(name, px + 4, py + h - 4);
+}
+document.title = `Fief · ${items.length} éléments · ${ms} ms · ${S.pages.length} page(s)`;
+</script>
+</body>
+</html>

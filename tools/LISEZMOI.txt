@@ -1,0 +1,26 @@
+﻿FIEF - un fond d'écran qui bâtit un royaume autour de vos icônes
+================================================================
+
+Lancez Fief.exe. Un monde médiéval apparaît derrière les icônes du
+bureau : chaque groupe d'icônes fonde une colonie (campement, hameau,
+village, bourg fortifié, cité). Déplacez, ajoutez ou supprimez une
+icône, et le monde réagit.
+
+Fief se loge près de l'horloge sous la forme d'un petit écu bleu.
+Clic droit dessus : Réglages, Écrans, Mettre en pause, Lancer au
+démarrage de Windows, Quitter.
+
+Premier lancement : le programme n'est pas encore signé, Windows peut
+donc afficher « Windows a protégé votre ordinateur ». Choisissez
+« Informations complémentaires », puis « Exécuter quand même ».
+
+Configuration : Windows 10 ou 11 (64 bits) avec le composant Microsoft
+Edge WebView2 Runtime, présent sur les Windows à jour.
+
+Pour retirer Fief : Quitter depuis l'écu, puis supprimer ce dossier.
+Les réglages sont dans %LOCALAPPDATA%\Fief.
+
+Fief ne lit que la position de vos icônes - jamais les noms ni le
+contenu des fichiers - et n'ouvre aucune connexion réseau.
+
+Logiciel libre sous licence GNU General Public License v3 (voir LICENSE).

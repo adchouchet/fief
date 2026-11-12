@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fief</title>
+<style>
+  :root {
+    --bg: #171b21; --panel: #1f252d; --line: #313a45; --ink: #ece6d6; --mute: #9aa3ad;
+    --gold: #d9b45a; --gold-ink: #2a2110; --field: #141920;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.45 "Segoe UI", system-ui, sans-serif; display: grid; grid-template-columns: minmax(0, 1fr) 380px; overflow: hidden; }
+  .stage { position: relative; min-width: 0; background: #0f3d5a; }
+  .stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+  .stage .tag { position: absolute; left: 14px; bottom: 12px; font-size: 12px; color: #fff; background: rgba(15, 20, 26, .6); padding: 5px 10px; border-radius: 999px; pointer-events: none; }
+  aside { background: var(--panel); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  header { padding: 20px 22px 14px; border-bottom: 1px solid var(--line); }
+  h1 { margin: 0; font: 600 24px/1.1 Georgia, "Palatino Linotype", serif; letter-spacing: .01em; color: var(--gold); }
+  header p { margin: 6px 0 0; color: var(--mute); font-size: 13px; }
+  .scroll { overflow-y: auto; padding: 4px 22px 18px; flex: 1; min-height: 0; }
+  h2 { font: 600 11px/1 "Segoe UI", sans-serif; text-transform: uppercase; letter-spacing: .12em; color: var(--mute); margin: 22px 0 10px; }
+  .row { margin: 0 0 14px; }
+  .row label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  .row label b { font-weight: 500; }
+  .row label span { color: var(--gold); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .row small { display: block; color: var(--mute); font-size: 12px; margin-top: 4px; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; margin: 0; cursor: pointer; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(to right, var(--gold) var(--p, 50%), var(--line) var(--p, 50%)); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 2px solid var(--gold); margin-top: -6px; }
+  input[type=range]:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+  .seg button, .btn { font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; cursor: pointer; }
+  .seg button:hover, .btn:hover { border-color: #4a5664; }
+  .seg button[aria-pressed=true] { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); font-weight: 600; }
+  .seg button:focus-visible, .btn:focus-visible, .sw button:focus-visible, .toggle input:focus-visible + i { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .seedrow { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+  input[type=number] { font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; width: 100%; min-width: 0; }
+  .sw { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+  .sw button { aspect-ratio: 1; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .25); }
+  .sw button[aria-pressed=true] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--panel) inset; }
+  .toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+  .toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .toggle i { flex: none; width: 40px; height: 22px; border-radius: 11px; background: var(--line); position: relative; transition: background .15s; }
+  .toggle i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); transition: transform .15s; }
+  .toggle input:checked + i { background: var(--gold); }
+  .toggle input:checked + i::after { transform: translateX(18px); }
+  footer { padding: 12px 22px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; color: var(--mute); font-size: 12px; gap: 10px; }
+  @media (max-width: 820px) { body { grid-template-columns: 1fr; grid-template-rows: 38vh 1fr; } aside { border-left: 0; border-top: 1px solid var(--line); } }
+  @media (prefers-reduced-motion: reduce) { .toggle i, .toggle i::after { transition: none; } }
+</style>
+</head>
+<body>
+<div class="stage">
+  <iframe id="preview" title=""></iframe>
+  <div class="tag" data-i18n="set.preview"></div>
+</div>
+<aside>
+  <header>
+    <h1>Fief</h1>
+    <p data-i18n="set.tagline"></p>
+  </header>
+  <div class="scroll">
+    <div id="screenRow" hidden>
+      <h2 data-i18n="set.screens"></h2>
+      <div class="row">
+        <div class="seg" id="screen" role="group"></div>
+        <small id="screenHint"></small>
+      </div>
+    </div>
+
+    <h2 data-i18n="set.map"></h2>
+    <div class="row">
+      <div class="seg" id="map" role="group">
+        <button data-v="archipel" data-i18n="map.archipel"></button><button data-v="cotes" data-i18n="map.cotes"></button><button data-v="continent" data-i18n="map.continent"></button>
+      </div>
+      <small id="mapHint"></small>
+    </div>
+    <div class="row">
+      <label for="seed"><b data-i18n="set.seed"></b></label>
+      <div class="seedrow"><input type="number" id="seed" min="1" max="999999" step="1"><button class="btn" id="reroll" data-i18n="set.reroll"></button></div>
+    </div>
+
+    <h2 data-i18n="set.around"></h2>
+    <div class="row"><label for="clear"><b data-i18n="set.clear"></b><span></span></label><input type="range" id="clear" min="30" max="80" step="1"><small data-i18n="set.clearHint"></small></div>
+    <div class="row"><label for="land"><b data-i18n="set.land"></b><span></span></label><input type="range" id="land" min="0.8" max="1.4" step="0.02"></div>
+    <div class="row"><label for="warp"><b data-i18n="set.warp"></b><span></span></label><input type="range" id="warp" min="0" max="50" step="1"></div>
+
+    <h2 data-i18n="set.world"></h2>
+    <div class="row"><label for="zoom"><b data-i18n="set.zoom"></b><span></span></label><input type="range" id="zoom" min="0.7" max="1.8" step="0.05"><small data-i18n="set.zoomHint"></small></div>
+    <div class="row"><label for="forest"><b data-i18n="set.forest"></b><span></span></label><input type="range" id="forest" min="0" max="1" step="0.01"></div>
+    <div class="row"><label for="pop"><b data-i18n="set.pop"></b><span></span></label><input type="range" id="pop" min="0.3" max="2" step="0.05"></div>
+    <div class="row"><label for="wildlife"><b data-i18n="set.wildlife"></b><span></span></label><input type="range" id="wildlife" min="0" max="2" step="0.05"></div>
+    <div class="row"><label for="boats"><b data-i18n="set.boats"></b><span></span></label><input type="range" id="boats" min="0" max="2" step="0.05"></div>
+    <div class="row"><label for="fog"><b data-i18n="set.fog"></b><span></span></label><input type="range" id="fog" min="0" max="1" step="0.01"><small data-i18n="set.fogHint"></small></div>
+    <div class="row">
+      <label><b data-i18n="set.team"></b></label>
+      <div class="sw" id="team" role="group"></div>
+    </div>
+
+    <h2 data-i18n="set.app"></h2>
+    <div class="row">
+      <label><b data-i18n="set.fps"></b></label>
+      <div class="seg" id="fps" role="group">
+        <button data-v="15"></button><button data-v="30"></button><button data-v="60"></button>
+      </div>
+      <small data-i18n="set.fpsHint"></small>
+    </div>
+    <div class="row" id="autoRow">
+      <label class="toggle"><b data-i18n="set.autostart"></b><input type="checkbox" id="autostart"><i></i></label>
+    </div>
+  </div>
+  <footer><span id="ver">Fief</span><button class="btn" id="reset" data-i18n="set.reset"></button></footer>
+</aside>
+
+<script type="module">
+import { DEFAULTS, TEAMS } from './js/config.js';
+import { t, LANG } from './js/i18n.js';
+
+const hosted = new URLSearchParams(location.search).has('host') && !!(window.chrome && window.chrome.webview);
+const $ = (id) => document.getElementById(id);
+const frame = $('preview');
+const S = { ...DEFAULTS };
+
+// ---- textes
+document.documentElement.lang = LANG;
+document.title = t('set.title');
+for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
+frame.title = t('set.previewTitle');
+$('screen').setAttribute('aria-label', t('set.screens'));
+$('map').setAttribute('aria-label', t('set.mapAria'));
+$('team').setAttribute('aria-label', t('set.team'));
+$('fps').setAttribute('aria-label', t('set.fpsAria'));
+for (const b of $('fps').children) b.textContent = b.dataset.v + ' ' + t('set.fpsUnit');
+frame.src = 'index.html?preview=1&lang=' + LANG;
+
+const FORMAT = {
+  clear: (v) => v + ' px', land: (v) => Math.round(v * 100) + ' %', warp: (v) => String(v),
+  zoom: (v) => Math.round(v * 100) + ' %',
+  forest: (v) => Math.round(v * 100) + ' %', pop: (v) => '× ' + v.toFixed(2), wildlife: (v) => '× ' + v.toFixed(2),
+  boats: (v) => '× ' + v.toFixed(2), fog: (v) => Math.round(v * 100) + ' %',
+};
+
+for (const [name, hex] of Object.entries(TEAMS)) {
+  const b = document.createElement('button');
+  b.dataset.v = name; b.style.background = hex; b.title = t('team.' + name); b.setAttribute('aria-label', t('team.' + name));
+  $('team').appendChild(b);
+}
+
+function render() {
+  for (const id of Object.keys(FORMAT)) {
+    const el = $(id);
+    el.value = S[id];
+    el.style.setProperty('--p', ((S[id] - el.min) / (el.max - el.min)) * 100 + '%');
+    el.previousElementSibling.querySelector('span').textContent = FORMAT[id](Number(S[id]));
+  }
+  $('seed').value = S.seed;
+  for (const id of ['map', 'fps', 'team']) for (const b of $(id).children) b.setAttribute('aria-pressed', String(b.dataset.v) === String(S[id]));
+  $('mapHint').textContent = t('map.' + S.map + '.hint');
+}
+
+// l'aperçu garde sa propre taille : la « taille du monde » ne s'y applique pas, sinon il se reconstruirait à chaque cran
+const forPreview = () => ({ ...S, zoom: 1 });
+
+let saveTimer = 0;
+function push() {
+  render();
+  frame.contentWindow && frame.contentWindow.postMessage({ type: 'settings', data: forPreview() }, '*');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const json = JSON.stringify(S);
+    if (hosted) window.chrome.webview.postMessage('save:' + json);
+    else try { localStorage.setItem('fief.settings', json); } catch {}
+  }, 180);
+}
+
+function load(data) {
+  if (data && typeof data === 'object') for (const k of Object.keys(DEFAULTS)) if (k in data && typeof data[k] === typeof DEFAULTS[k]) S[k] = data[k];
+  render();
+  frame.contentWindow && frame.contentWindow.postMessage({ type: 'settings', data: forPreview() }, '*');
+}
+
+for (const id of Object.keys(FORMAT)) $(id).addEventListener('input', (e) => { S[id] = Number(e.target.value); push(); });
+$('seed').addEventListener('change', (e) => { const v = Math.max(1, Math.min(999999, Math.round(Number(e.target.value) || DEFAULTS.seed))); S.seed = v; push(); });
+$('reroll').addEventListener('click', () => { S.seed = 1 + Math.floor(Math.random() * 999998); push(); });
+for (const id of ['map', 'team']) $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S[id] = b.dataset.v; push(); } });
+$('fps').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.fps = Number(b.dataset.v); push(); } });
+$('reset').addEventListener('click', () => { Object.assign(S, DEFAULTS); push(); });
+$('autostart').addEventListener('change', (e) => { if (hosted) window.chrome.webview.postMessage('autostart:' + (e.target.checked ? 1 : 0)); });
+
+frame.addEventListener('load', () => frame.contentWindow.postMessage({ type: 'settings', data: forPreview() }, '*'));
+
+// ---- choix de l'écran : géré par le programme Windows, qui fournit la liste
+let screens = [];
+function renderScreens(current) {
+  for (const b of $('screen').children) b.setAttribute('aria-pressed', String(Number(b.dataset.v) === current));
+  $('screenHint').textContent = screens[current] ? t('set.screensHint', screens[current].l) : '';
+}
+$('screen').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b || !hosted) return;
+  renderScreens(Number(b.dataset.v));
+  window.chrome.webview.postMessage('screen:' + b.dataset.v);
+});
+
+if (hosted) {
+  window.chrome.webview.addEventListener('message', (e) => {
+    const m = e.data;
+    if (!m) return;
+    if (m.type === 'screen') { renderScreens(Number(m.index) || 0); return; }
+    if (m.type !== 'init') return;
+    load(m.settings);
+    $('autostart').checked = !!m.autostart;
+    $('ver').textContent = 'Fief ' + (m.version || '');
+    screens = Array.isArray(m.screens) ? m.screens : [];
+    $('screenRow').hidden = screens.length < 3; // « tous » + au moins deux écrans
+    $('screen').textContent = '';
+    screens.forEach((sc, i) => {
+      const b = document.createElement('button');
+      b.dataset.v = i; b.textContent = sc.s; b.title = sc.l;
+      $('screen').appendChild(b);
+    });
+    renderScreens(Number(m.screen) || 0);
+  });
+  window.chrome.webview.postMessage('ready');
+} else {
+  $('autoRow').hidden = true;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('fief.settings') || 'null'); } catch {}
+  load(saved);
+}
+</script>
+</body>
+</html>

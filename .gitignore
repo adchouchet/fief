@@ -1,0 +1,10 @@
+# sorties de compilation
+host/bin/
+host/obj/
+dist/
+release/
+
+# réglages locaux d'outils
+.claude/
+.vs/
+*.user
