@@ -26,11 +26,34 @@ function drawPerson(c, x, y, t, o) {
   c.fillRect(-1.7 + sw * 0.9, -3.4, 1.4, 3.6);
   c.fillRect(0.4 - sw * 0.9, -3.4, 1.4, 3.6);
   c.fillStyle = o.tunic; c.fillRect(-2.3, -8.6, 4.8, 5.6);
+  if (o.stripe) { c.fillStyle = o.stripe; c.fillRect(-2.3, -8, 4.8, 0.8); c.fillRect(-2.3, -6.5, 4.8, 0.8); }
   c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(1.1, -8.6, 1.4, 5.6);
   c.fillStyle = 'rgba(40,25,10,.7)'; c.fillRect(-2.3, -5.2, 4.8, 0.9);
   c.fillStyle = SKIN; c.beginPath(); c.arc(0.1, -10.6, 2.15, 0, TAU); c.fill();
-  c.fillStyle = o.hat; c.beginPath(); c.arc(0.1, -11.1, 2.2, Math.PI, 0); c.fill();
-  if (o.brim) c.fillRect(-3.1, -11.4, 6.4, 0.9);
+  if (o.hatStyle === 'kasa') {
+    // chapeau de paille conique
+    c.fillStyle = '#d8bf78'; c.beginPath(); c.moveTo(-4.1, -10.8); c.lineTo(4.3, -10.8); c.lineTo(0.1, -14.2); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(90,65,20,.55)'; c.fillRect(-4.1, -11.1, 8.4, 0.7);
+  } else if (o.hatStyle === 'helmet') {
+    // casque de scaphandre
+    c.fillStyle = '#f2f4f7'; c.beginPath(); c.arc(0.1, -10.8, 2.9, 0, TAU); c.fill();
+    c.fillStyle = '#27405e'; c.beginPath(); c.ellipse(0.9, -10.6, 1.7, 1.5, 0, 0, TAU); c.fill();
+  } else if (o.hatStyle === 'tricorn') {
+    // tricorne noir galonné
+    c.fillStyle = '#1c1c20'; c.beginPath(); c.moveTo(-3.9, -11.3); c.lineTo(4.1, -11.3); c.lineTo(2.6, -13.7); c.lineTo(0.1, -12.7); c.lineTo(-2.4, -13.7); c.closePath(); c.fill();
+    c.fillStyle = '#d9b23c'; c.fillRect(-3.9, -11.6, 8, 0.6);
+  } else if (o.hatStyle === 'bandana') {
+    // foulard noué sur la nuque
+    c.fillStyle = o.hat; c.beginPath(); c.arc(0.1, -11.1, 2.3, Math.PI, 0); c.fill();
+    c.fillRect(-3.7, -11.4, 1.7, 1.1); c.fillRect(-4.3, -10.5, 1.2, 1.4);
+  } else if (o.hatStyle === 'headcloth') {
+    // coiffe de tissu qui retombe sur la nuque
+    c.fillStyle = o.hat; c.beginPath(); c.arc(0.1, -11.1, 2.3, Math.PI, 0); c.fill();
+    c.fillRect(-2.5, -11.2, 1.5, 3.6);
+  } else {
+    c.fillStyle = o.hat; c.beginPath(); c.arc(0.1, -11.1, 2.2, Math.PI, 0); c.fill();
+    if (o.brim) c.fillRect(-3.1, -11.4, 6.4, 0.9);
+  }
   if (o.work) {
     const a = -1.5 + (Math.sin(t * 7) * 0.5 + 0.5) * 1.6;
     c.save(); c.translate(1.6, -7.4); c.rotate(a);
@@ -63,7 +86,8 @@ class Villager {
     this.path = null; this.pi = 0; this.next = null; this.target = null; this.site = null;
     this.carry = null; this.work = false; this.moving = false; this.flip = R() < 0.5; this.fails = 0;
     this.farm = null; this.cycles = 0;
-    this.hat = ['#5a3a1e', '#2e2a26', '#8a5a2a', '#6b4a28', '#a8322a'][(R() * 5) | 0];
+    const hats = A.theme.hats || ['#5a3a1e', '#2e2a26', '#8a5a2a', '#6b4a28', '#a8322a'];
+    this.hat = hats[(R() * hats.length) | 0];
   }
 
   leaveSite() { if (this.site) { this.site.builders = Math.max(0, this.site.builders - 1); this.site = null; } }
@@ -198,8 +222,11 @@ class Villager {
 
   draw(c) {
     if (this.hidden) return;
-    this.tunic = this.job === 'build' ? this.A.team : TUNIC[this.job] || TUNIC.idle;
+    const th = this.A.theme;
+    this.tunic = this.job === 'build' ? this.A.team : (th.tunic && th.tunic[this.job]) || TUNIC[this.job] || TUNIC.idle;
     this.brim = this.job === 'farm';
+    this.hatStyle = Array.isArray(th.hat) ? th.hat[this.n % th.hat.length] : th.hat;
+    this.stripe = th.stripe && this.n % 2 === 0 && this.job !== 'build' ? th.stripe : null;
     drawPerson(c, this.x, this.y, this.t, this);
   }
 }
@@ -207,9 +234,10 @@ class Villager {
 // ---------------------------------------------------------------- animaux
 
 class Grazer {
-  constructor(A, tile, kind, key) {
+  /** herd : vrai pour le troupeau d'une colonie, faux pour les bêtes sauvages. */
+  constructor(A, tile, kind, key, herd = false) {
     const g = A.w.grid;
-    this.A = A; this.kind = kind; this.key = key; this.home = tile; this.tile = tile;
+    this.A = A; this.kind = kind; this.key = key; this.herd = herd; this.home = tile; this.tile = tile;
     this.x = g.cx[tile] + (R() - 0.5) * 16; this.y = g.cy[tile] + (R() - 0.5) * 8; this.baseY = this.y;
     this.tx = this.x; this.ty = this.y;
     this.hw = 8; this.hh = kind === 'deer' ? 14 : 9;
@@ -251,13 +279,15 @@ class Grazer {
     c.translate(Math.round(this.x), Math.round(this.y));
     if (this.alpha < 1) c.globalAlpha = Math.max(0, this.alpha);
     const sw = this.moving ? Math.sin(this.t * 9) * 0.8 : 0;
+    const th = this.A.theme;
     if (this.kind === 'sheep') {
+      const k = th.herdLook || {};
       c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(0.5, 0.3, 4.6, 1.6, 0, 0, TAU); c.fill();
       if (this.flip) c.scale(-1, 1);
-      c.fillStyle = '#3a3530'; c.fillRect(-2.6 + sw, -2.4, 1, 2.6); c.fillRect(1.8 - sw, -2.4, 1, 2.6);
-      c.fillStyle = '#d6d0c2'; c.beginPath(); c.ellipse(0.3, -4, 4.3, 2.9, 0, 0, TAU); c.fill();
-      c.fillStyle = '#f3efe5'; c.beginPath(); c.ellipse(-0.3, -4.5, 3.8, 2.4, 0, 0, TAU); c.fill();
-      c.fillStyle = '#3a3530'; c.beginPath(); c.ellipse(4.2, eat ? -2.4 : -5.2, 1.6, 1.4, 0, 0, TAU); c.fill();
+      c.fillStyle = k.head || '#3a3530'; c.fillRect(-2.6 + sw, -2.4, 1, 2.6); c.fillRect(1.8 - sw, -2.4, 1, 2.6);
+      c.fillStyle = k.shade || '#d6d0c2'; c.beginPath(); c.ellipse(0.3, -4, 4.3, 2.9, 0, 0, TAU); c.fill();
+      c.fillStyle = k.wool || '#f3efe5'; c.beginPath(); c.ellipse(-0.3, -4.5, 3.8, 2.4, 0, 0, TAU); c.fill();
+      c.fillStyle = k.head || '#3a3530'; c.beginPath(); c.ellipse(4.2, eat ? -2.4 : -5.2, 1.6, 1.4, 0, 0, TAU); c.fill();
     } else {
       c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(0.5, 0.3, 5, 1.6, 0, 0, TAU); c.fill();
       if (this.flip) c.scale(-1, 1);
@@ -377,6 +407,9 @@ class Boat {
   }
 
   draw(c) {
+    // un thème peut dessiner tout autre chose qu'un bateau (caravane, vaisseau…)
+    if (this.A.theme.drawBoat) { this.A.theme.drawBoat(c, this); return; }
+    const sail = this.A.theme.sail || {};
     const trade = this.kind !== 'fish';
     const L = trade ? 11.5 : 7.5, Wd = trade ? 4.3 : 3, H = trade ? 3 : 2.2;
     const cs = Math.cos(this.th), sn = Math.sin(this.th);
@@ -408,8 +441,12 @@ class Boat {
     if (this.sailUp || this.state === 'sail') {
       const s = trade ? 6 : 3.6, zt = H + mh - 1, zb = H + (trade ? 4 : 3.2), bl = 1.6;
       const q = [P(L * 0.1, -s, zt), P(L * 0.1, s, zt), P(L * 0.1 + bl, s * 0.92, zb), P(L * 0.1 + bl, -s * 0.92, zb)];
-      poly(q, '#efe6cf', 'rgba(60,45,25,.6)');
-      if (trade) poly([P(L * 0.1, -s * 0.34, zt), P(L * 0.1, s * 0.34, zt), P(L * 0.1 + bl, s * 0.31, zb), P(L * 0.1 + bl, -s * 0.31, zb)], this.kind === 'roam' ? '#b23a2a' : this.A.team);
+      poly(q, (this.kind === 'roam' && sail.roamCloth) || (this.kind === 'fish' && sail.fishCloth) || sail.cloth || '#efe6cf', 'rgba(60,45,25,.6)');
+      const mark = this.kind === 'roam' ? sail.roam || '#b23a2a' : sail.trade || this.A.team;
+      const band = (a, b) => poly([P(L * 0.1, s * a, zt), P(L * 0.1, s * b, zt), P(L * 0.1 + bl, s * b * 0.92, zb), P(L * 0.1 + bl, s * a * 0.92, zb)], mark);
+      if (sail.emblem) sail.emblem(c, (q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4, s, this);
+      else if (trade && sail.stripes) { band(-0.95, -0.6); band(-0.2, 0.2); band(0.6, 0.95); }
+      else if (trade) band(-0.34, 0.34);
     } else {
       c.strokeStyle = 'rgba(235,225,195,.9)'; c.lineWidth = 1.4;
       const a = P(L * 0.1, -2.6, H + mh - 1.5), b = P(L * 0.1, 2.6, H + mh - 1.5);
@@ -429,6 +466,7 @@ function popTarget(C, S) {
 export class Agents {
   constructor(world, S) {
     this.w = world; this.S = S;
+    this.theme = world.theme || {};
     this.team = TEAMS[S.team] || TEAMS.bleu;
     this.vill = []; this.grazers = []; this.boats = []; this.over = []; this.emit = [];
     this.parts = []; this.birds = []; this.fishes = [];
@@ -502,16 +540,18 @@ export class Agents {
     for (const a of this.grazers) {
       if (a.dying) continue;
       const k = g.tileAt(a.x, a.y);
-      const ok = k >= 0 && w.walk[k] && w.terr[k] === T_LAND && (a.kind === 'sheep' ? w.cl[k] >= 0 && w.zone[k] !== 1 : w.zone[k] === 0);
+      const ok = k >= 0 && w.walk[k] && w.terr[k] === T_LAND && (a.herd ? w.cl[k] >= 0 && w.zone[k] !== 1 : w.zone[k] === 0);
       if (!ok || !w.walk[a.home]) { a.dying = true; continue; }
-      if (a.kind === 'sheep') a.key = w.cl[k];
-      count.set(a.kind + a.key, (count.get(a.kind + a.key) || 0) + 1);
+      if (a.herd) a.key = w.cl[k];
+      const ck = (a.herd ? 'herd' : 'wild') + a.key;
+      count.set(ck, (count.get(ck) || 0) + 1);
     }
     if (S.wildlife <= 0) { for (const a of this.grazers) a.dying = true; return; }
-    // moutons : un petit troupeau par colonie
+    // un petit troupeau par colonie (moutons, ou l'animal choisi par le thème)
+    const herdKind = this.theme.herd === undefined ? 'sheep' : this.theme.herd; // null : pas de troupeau
     for (const C of w.clusters) {
-      if (C.tier < 1) continue;
-      const want = Math.round((2 + C.tier) * S.wildlife), have = count.get('sheep' + C.id) || 0;
+      if (C.tier < 1 || !herdKind) continue;
+      const want = Math.round((2 + C.tier) * S.wildlife), have = count.get('herd' + C.id) || 0;
       if (have >= want) continue;
       let best = -1, bs = -1;
       for (const list of [C.outerTiles, C.townTiles]) {
@@ -519,9 +559,10 @@ export class Agents {
         if (best >= 0) break;
       }
       if (best < 0) continue;
-      for (let n = have; n < want; n++) { const a = new Grazer(this, best, 'sheep', C.id); if (instant) a.alpha = 1; this.grazers.push(a); }
+      for (let n = have; n < want; n++) { const a = new Grazer(this, best, herdKind, C.id, true); if (instant) a.alpha = 1; this.grazers.push(a); }
     }
     // cerfs : dans les clairières sauvages
+    if (this.theme.wild === false) return;
     let herds = 0;
     for (let i = 8; i < g.NI && herds < 14; i += 16) for (let j = 8; j < g.NJ && herds < 14; j += 16) {
       if (hash2(i, j, S.seed + 300) > 0.3 * S.wildlife) continue;
@@ -529,7 +570,7 @@ export class Agents {
       if (k < 0 || w.zone[k] !== 0 || w.terr[k] !== T_LAND) continue;
       const key = i * 4096 + j;
       herds++;
-      if (count.get('deer' + key)) continue;
+      if (count.get('wild' + key)) continue;
       const n = 2 + ((hash2(i, j, 9) * 3) | 0);
       for (let q = 0; q < n; q++) { const a = new Grazer(this, k, 'deer', key); if (instant) a.alpha = 1; this.grazers.push(a); }
     }
@@ -583,7 +624,10 @@ export class Agents {
     this.over.length = 0; this.emit.length = 0;
     for (const o of w.buildings) {
       if (o.state !== 'idle') continue;
-      if (o.type === 'mill') this.over.push(makeSails(o));
+      // un thème peut fournir ses propres points de fumée pour un bâtiment
+      const custom = this.theme.emitters ? this.theme.emitters(o) : undefined;
+      if (custom !== undefined) { for (const e of custom) this.emit.push({ ...e, acc: R() }); continue; }
+      if (o.type === 'mill') { if (this.theme.millSails !== false) this.over.push(makeSails(o)); }
       else if (o.type === 'campfire') { this.over.push(makeFire(o)); this.emit.push({ x: o.x, y: o.y - 7, rate: 1.2, acc: R() }); }
       else if (o.type === 'smith') this.emit.push({ x: o.x + 14, y: o.y - 26, rate: 2.2, acc: R() });
       else if (o.type === 'house' && o.variant >= 1 && o.id % 2 === 0) this.emit.push(o.variant % 2 ? { x: o.x + 2.6, y: o.y - 22, rate: 0.8, acc: R() } : { x: o.x + 5.5, y: o.y - 18.5, rate: 0.8, acc: R() });
@@ -591,7 +635,7 @@ export class Agents {
   }
 
   setupBirds() {
-    const w = this.w, want = Math.round(Math.min(7, 2 + (w.grid.W * w.grid.H) / 1.6e6) * Math.min(1, this.S.wildlife));
+    const w = this.w, want = this.theme.birds === false ? 0 : Math.round(Math.min(7, 2 + (w.grid.W * w.grid.H) / 1.6e6) * Math.min(1, this.S.wildlife));
     while (this.birds.length > want) this.birds.pop();
     while (this.birds.length < want) this.birds.push({ x: R() * w.grid.W, y: R() * w.grid.H, th: R() * TAU, turn: 0, t: R() * 10, sp: 24 + R() * 14 });
   }
@@ -603,6 +647,7 @@ export class Agents {
   }
 
   fish(x, y) {
+    if (this.theme.fish === false) return;
     if (this.fishes.length < 12) this.fishes.push({ x, y, t: 0, dir: R() < 0.5 ? -1 : 1 });
   }
 
@@ -648,6 +693,8 @@ export class Agents {
       this.parts[n++] = p;
     }
     this.parts.length = n;
+
+    if (this.theme.ambient) this.theme.ambient(this, dt);
 
     // poissons qui sautent près des pontons
     this.fxT -= dt;
@@ -708,18 +755,19 @@ export class Agents {
     }
     for (const p of this.parts) {
       const u = p.life / p.max;
-      c.fillStyle = `rgba(${p.col},${(0.55 * (1 - u)).toFixed(3)})`;
+      c.fillStyle = `rgba(${p.col},${((p.a || 0.55) * (1 - u)).toFixed(3)})`;
       c.beginPath(); c.arc(p.x, p.y, p.r + p.grow * u, 0, TAU); c.fill();
     }
+    const bird = this.theme.bird || {}, body = bird.body || '#f4f4f0', tip = bird.tip || '#5f666c', bs = bird.scale || 1;
     for (const b of this.birds) {
       const flap = Math.sin(b.t * 5.5) * 2.4, dx = Math.cos(b.th), dy = Math.sin(b.th) * 0.6;
       c.fillStyle = 'rgba(0,0,0,.16)';
       c.beginPath(); c.ellipse(b.x + 16, b.y + 30, 5, 1.8, 0, 0, TAU); c.fill();
-      c.save(); c.translate(b.x, b.y); c.rotate(Math.atan2(dy, dx));
-      c.strokeStyle = '#f4f4f0'; c.lineWidth = 1.6; c.lineCap = 'round'; c.lineJoin = 'round';
+      c.save(); c.translate(b.x, b.y); c.rotate(Math.atan2(dy, dx)); c.scale(bs, bs);
+      c.strokeStyle = body; c.lineWidth = 1.6; c.lineCap = 'round'; c.lineJoin = 'round';
       c.beginPath(); c.moveTo(-1.5, -6); c.quadraticCurveTo(1.2, -3 + flap * 0.4, 0, 0); c.quadraticCurveTo(1.2, 3 - flap * 0.4, -1.5, 6); c.stroke();
-      c.strokeStyle = '#5f666c'; c.lineWidth = 1; c.beginPath(); c.moveTo(-1.5, -6); c.lineTo(-1, -4.6); c.moveTo(-1.5, 6); c.lineTo(-1, 4.6); c.stroke();
-      c.fillStyle = '#f4f4f0'; c.beginPath(); c.ellipse(0.4, 0, 2.6, 1.1, 0, 0, TAU); c.fill();
+      c.strokeStyle = tip; c.lineWidth = 1; c.beginPath(); c.moveTo(-1.5, -6); c.lineTo(-1, -4.6); c.moveTo(-1.5, 6); c.lineTo(-1, 4.6); c.stroke();
+      c.fillStyle = body; c.beginPath(); c.ellipse(0.4, 0, 2.6, 1.1, 0, 0, TAU); c.fill();
       c.restore();
     }
   }

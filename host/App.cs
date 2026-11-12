@@ -36,7 +36,11 @@ namespace Fief
         /// <summary>Paramètres communs passés aux pages : langue et échelle.</summary>
         public static string PageQuery()
         {
-            return "host=1&lang=" + (French ? "fr" : "en") + "&scale=" + DisplayScale().ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+            string q = "host=1&lang=" + (French ? "fr" : "en") + "&scale=" + DisplayScale().ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+            // le thème choisi est donné dès l'adresse, pour ne pas afficher un instant le thème de base
+            var m = System.Text.RegularExpressions.Regex.Match(LoadSettings() ?? "", "\"theme\"\\s*:\\s*\"([a-z0-9_-]+)\"");
+            if (m.Success) q += "&theme=" + m.Groups[1].Value;
+            return q;
         }
 
         /// <summary>Dossier du thème : à côté de l'exécutable, sinon dans un dossier parent (mode développement).</summary>

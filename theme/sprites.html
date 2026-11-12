@@ -11,9 +11,12 @@
 <body>
 <canvas id="c"></canvas>
 <script type="module">
-import { buildSprites, drawSprite } from './js/sprites.js';
+import { drawSprite } from './js/sprites.js';
+import { loadTheme } from './js/themes.js';
+// ?theme=<identifiant> montre la planche d'un pack
+const theme = await loadTheme(new URLSearchParams(location.search).get('theme') || 'medieval');
 const t0 = performance.now();
-const S = buildSprites('#2f5fc4');
+const S = theme.buildSprites('#2f5fc4');
 const ms = Math.round(performance.now() - t0);
 const Z = Number(new URLSearchParams(location.search).get('z') || 3);
 const items = [];

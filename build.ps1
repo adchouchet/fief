@@ -1,4 +1,4 @@
-﻿﻿# Compile Fief et prépare tout ce qui se distribue.
+﻿# Compile Fief et prépare tout ce qui se distribue.
 #   powershell -ExecutionPolicy Bypass -File build.ps1
 #
 #   dist\                      le programme prêt à lancer (Fief.exe + theme\)
@@ -33,6 +33,10 @@ function Copy-Theme($to) {
 }
 Copy-Theme (Join-Path $dist 'theme')
 
+# packs de thèmes payants : seulement dans la copie locale (dist), jamais dans l'archive ni la démo publiques
+$packs = Join-Path $root 'packs'
+if (Test-Path $packs) { Copy-Item $packs (Join-Path $dist 'theme\packs') -Recurse }
+
 # démo en ligne : le thème sans la page de réglages
 $demo = Join-Path $root 'docs\demo'
 Copy-Theme $demo
@@ -45,6 +49,7 @@ $stage = Join-Path $root 'release\Fief'
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
 New-Item -ItemType Directory -Force $stage | Out-Null
 Copy-Item (Join-Path $dist '*') $stage -Recurse
+Remove-Item (Join-Path $stage 'theme\packs') -Recurse -Force -ErrorAction SilentlyContinue
 foreach ($f in 'LICENSE', 'tools\LISEZMOI.txt', 'tools\README.txt') {
     $src = Join-Path $root $f
     if (Test-Path $src) { Copy-Item $src $stage }

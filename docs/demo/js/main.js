@@ -18,6 +18,7 @@ import { Agents } from './agents.js';
 import { buildSprites } from './sprites.js';
 import { Demo } from './demo.js';
 import { t } from './i18n.js';
+import { MEDIEVAL, loadTheme } from './themes.js';
 
 const query = new URLSearchParams(location.search);
 const hosted = query.has('host') && !!(window.chrome && window.chrome.webview);
@@ -37,6 +38,7 @@ const dynCanvas = document.getElementById('dynamic');
 const fogCanvas = document.getElementById('fog');
 const fogCtx = fogCanvas.getContext('2d');
 
+let theme = MEDIEVAL;   // thème en cours (voir themes.js)
 let W = 0, H = 0;       // taille logique du monde
 let Z = 1, K = 1;
 let sprites = null, grid = null, world = null, scene = null, agents = null;
@@ -49,7 +51,7 @@ let fogImg = null;
 
 const clock = () => performance.now() / 1000;
 
-/** Reconstruit tout ce qui dépend de la taille d'écran, de l'échelle, de la graine ou de la couleur. */
+/** Reconstruit tout ce qui dépend de la taille d'écran, de l'échelle, de la graine, de la couleur ou du thème. */
 function rebuild() {
   const cssW = window.innerWidth, cssH = window.innerHeight;
   if (cssW < 8 || cssH < 8) return;
@@ -62,16 +64,17 @@ function rebuild() {
   for (const c of [groundCanvas, staticCanvas, dynCanvas]) { c.style.width = cssW + 'px'; c.style.height = cssH + 'px'; }
 
   ground.resize(bw, bh, K);
+  ground.setPalette(theme.ground);
   field.resize(W, H, S.seed);
   fogCanvas.width = field.gw; fogCanvas.height = field.gh;
   fogCanvas.style.width = field.gw * CS * Z + 'px'; fogCanvas.style.height = field.gh * CS * Z + 'px';
   fogCanvas.style.left = (-CS / 2) * Z + 'px'; fogCanvas.style.top = (-CS / 2) * Z + 'px';
   fogImg = fogCtx.createImageData(field.gw, field.gh);
 
-  const key = S.team + '@' + K.toFixed(3);
-  if (!sprites || sprites.key !== key) { sprites = buildSprites(TEAMS[S.team] || TEAMS.bleu, K); sprites.key = key; }
+  const key = theme.id + '|' + S.team + '@' + K.toFixed(3);
+  if (!sprites || sprites.key !== key) { sprites = (theme.buildSprites || buildSprites)(TEAMS[S.team] || TEAMS.bleu, K); sprites.key = key; }
   grid = new Grid(W, H);
-  world = new World(grid, field, sprites, S);
+  world = new World(grid, field, sprites, S, theme);
   scene = new Scene(staticCanvas, dynCanvas, sprites);
   scene.resize(W, H, bw, bh, K);
   agents = new Agents(world, S);
@@ -91,8 +94,9 @@ function relayout(instant) {
 
 function drawFog() {
   const { gw, gh, cur } = field, d = fogImg.data, k = S.fog * 225;
+  const fc = theme.fog || MEDIEVAL.fog;
   for (let i = 0, o = 0, n = gw * gh; i < n; i++, o += 4) {
-    d[o] = 9; d[o + 1] = 15; d[o + 2] = 26;
+    d[o] = fc[0]; d[o + 1] = fc[1]; d[o + 2] = fc[2];
     d[o + 3] = cur[o + 3] * k;
   }
   fogCtx.putImageData(fogImg, 0, 0);
@@ -144,17 +148,26 @@ function frame(nowMs) {
 const REBUILD_KEYS = ['seed', 'team', 'zoom'];
 const LAYOUT_KEYS = ['map', 'clear', 'land', 'warp', 'forest', 'pop', 'boats', 'wildlife'];
 
+/** Charge un thème (le pack peut manquer : on retombe alors sur le thème de base) puis reconstruit. */
+let themeToken = 0;
+function switchTheme(id) {
+  const token = ++themeToken;
+  return loadTheme(id).then((th) => { if (token === themeToken) { theme = th; rebuild(); } });
+}
+
 function applySettings(data) {
   if (!data) return;
-  let needRebuild = false, needLayout = false, needFog = false;
+  let needRebuild = false, needLayout = false, needFog = false, needTheme = false;
   for (const k of Object.keys(DEFAULTS)) {
     if (!(k in data) || data[k] === S[k] || typeof data[k] !== typeof DEFAULTS[k]) continue;
     S[k] = data[k];
-    if (REBUILD_KEYS.includes(k)) needRebuild = true;
+    if (k === 'theme') needTheme = true;
+    else if (REBUILD_KEYS.includes(k)) needRebuild = true;
     else if (LAYOUT_KEYS.includes(k)) needLayout = true;
     else if (k === 'fog') needFog = true;
   }
-  if (needRebuild) rebuild();
+  if (needTheme) switchTheme(S.theme);
+  else if (needRebuild) rebuild();
   else if (needLayout) relayout(false);
   if (needFog && world) drawFog();
 }
@@ -180,16 +193,19 @@ window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer
 // aperçu intégré dans une autre page (réglages, page de présentation)
 window.addEventListener('message', (e) => { if (e.source === window.parent && e.source !== window) onMessage(e.data); });
 
-rebuild();
-if (hosted) {
-  window.chrome.webview.addEventListener('message', (e) => onMessage(e.data));
-  window.chrome.webview.postMessage('ready');
-} else {
-  demo = new Demo(document.getElementById('desk'), (rects) => onMessage({ type: 'icons', rects }), preview || query.has('quiet'));
-  if (query.has('empty')) onMessage({ type: 'icons', rects: [] });
-  else demo.layoutDefault(window.innerWidth, window.innerHeight, query.get('layout'));
-}
-requestAnimationFrame(frame);
+// le thème demandé dans l'adresse est chargé avant le premier affichage
+const boot = S.theme !== MEDIEVAL.id ? switchTheme(S.theme) : Promise.resolve(rebuild());
+boot.then(() => {
+  if (hosted) {
+    window.chrome.webview.addEventListener('message', (e) => onMessage(e.data));
+    window.chrome.webview.postMessage('ready');
+  } else {
+    demo = new Demo(document.getElementById('desk'), (rects) => onMessage({ type: 'icons', rects }), preview || query.has('quiet'));
+    if (query.has('empty')) onMessage({ type: 'icons', rects: [] });
+    else demo.layoutDefault(window.innerWidth, window.innerHeight, query.get('layout'));
+  }
+  requestAnimationFrame(frame);
+});
 
 /** Mesure le coût d'une image côté processeur (ms), sans attendre l'affichage. */
 function bench(n = 60) {
@@ -199,4 +215,4 @@ function bench(n = 60) {
   return (performance.now() - t0) / n;
 }
 
-window.__fief = { S, field, stats, bench, get world() { return world; }, get scene() { return scene; }, get agents() { return agents; }, get scale() { return { Z, K, W, H }; }, onMessage, rebuild };
+window.__fief = { S, field, stats, bench, get world() { return world; }, get scene() { return scene; }, get agents() { return agents; }, get scale() { return { Z, K, W, H }; }, get theme() { return theme; }, onMessage, rebuild };

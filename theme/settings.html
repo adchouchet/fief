@@ -35,6 +35,7 @@
   .seg button:hover, .btn:hover { border-color: #4a5664; }
   .seg button[aria-pressed=true] { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); font-weight: 600; }
   .seg button:focus-visible, .btn:focus-visible, .sw button:focus-visible, .toggle input:focus-visible + i { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .seg.wrap { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .seedrow { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
   input[type=number] { font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; width: 100%; min-width: 0; }
   .sw { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
@@ -62,6 +63,10 @@
     <p data-i18n="set.tagline"></p>
   </header>
   <div class="scroll">
+    <div id="themeRow" hidden>
+      <h2 data-i18n="set.theme"></h2>
+      <div class="row"><div class="seg wrap" id="theme" role="group"></div></div>
+    </div>
     <div id="screenRow" hidden>
       <h2 data-i18n="set.screens"></h2>
       <div class="row">
@@ -117,6 +122,7 @@
 <script type="module">
 import { DEFAULTS, TEAMS } from './js/config.js';
 import { t, LANG } from './js/i18n.js';
+import { MEDIEVAL, listPacks } from './js/themes.js';
 
 const hosted = new URLSearchParams(location.search).has('host') && !!(window.chrome && window.chrome.webview);
 const $ = (id) => document.getElementById(id);
@@ -156,7 +162,7 @@ function render() {
     el.previousElementSibling.querySelector('span').textContent = FORMAT[id](Number(S[id]));
   }
   $('seed').value = S.seed;
-  for (const id of ['map', 'fps', 'team']) for (const b of $(id).children) b.setAttribute('aria-pressed', String(b.dataset.v) === String(S[id]));
+  for (const id of ['map', 'fps', 'team', 'theme']) for (const b of $(id).children) b.setAttribute('aria-pressed', String(b.dataset.v) === String(S[id]));
   $('mapHint').textContent = t('map.' + S.map + '.hint');
 }
 
@@ -184,12 +190,26 @@ function load(data) {
 for (const id of Object.keys(FORMAT)) $(id).addEventListener('input', (e) => { S[id] = Number(e.target.value); push(); });
 $('seed').addEventListener('change', (e) => { const v = Math.max(1, Math.min(999999, Math.round(Number(e.target.value) || DEFAULTS.seed))); S.seed = v; push(); });
 $('reroll').addEventListener('click', () => { S.seed = 1 + Math.floor(Math.random() * 999998); push(); });
-for (const id of ['map', 'team']) $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S[id] = b.dataset.v; push(); } });
+for (const id of ['map', 'team', 'theme']) $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S[id] = b.dataset.v; push(); } });
 $('fps').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.fps = Number(b.dataset.v); push(); } });
 $('reset').addEventListener('click', () => { Object.assign(S, DEFAULTS); push(); });
 $('autostart').addEventListener('change', (e) => { if (hosted) window.chrome.webview.postMessage('autostart:' + (e.target.checked ? 1 : 0)); });
 
 frame.addEventListener('load', () => frame.contentWindow.postMessage({ type: 'settings', data: forPreview() }, '*'));
+
+// ---- choix du thème : n'apparaît que si des packs sont installés
+$('theme').setAttribute('aria-label', t('set.theme'));
+listPacks().then((packs) => {
+  if (!packs.length) return;
+  for (const p of [{ id: MEDIEVAL.id, name: MEDIEVAL.name }, ...packs]) {
+    const b = document.createElement('button');
+    b.dataset.v = p.id;
+    b.textContent = (p.name && (p.name[LANG] || p.name.en)) || p.id;
+    $('theme').appendChild(b);
+  }
+  $('themeRow').hidden = false;
+  render();
+});
 
 // ---- choix de l'écran : géré par le programme Windows, qui fournit la liste
 let screens = [];

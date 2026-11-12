@@ -3,6 +3,7 @@
 export const TW = 24, TH = 12; // taille d'une tuile isométrique à l'écran (px)
 
 export const DEFAULTS = {
+  theme: 'medieval', // thème : 'medieval', ou l'identifiant d'un pack installé dans packs/
   map: 'archipel',   // archipel | cotes | continent
   seed: 1066,        // graine de la carte
   clear: 44,         // espace dégagé autour des icônes (px)

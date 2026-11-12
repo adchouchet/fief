@@ -18,8 +18,11 @@ const types = {
 http.createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
   if (p.endsWith('/')) p += 'index.html';
-  const file = path.join(root, p);
-  if (!file.startsWith(root)) { res.writeHead(403); return res.end(); }
+  // les packs de thèmes vivent hors du thème public, dans packs/ à la racine du projet
+  const packs = path.join(base, 'packs');
+  const inPacks = p.startsWith('/packs/') && root.endsWith('theme');
+  const file = inPacks ? path.join(base, p) : path.join(root, p);
+  if (!file.startsWith(inPacks ? packs : root)) { res.writeHead(403); return res.end(); }
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404); return res.end('not found'); }
     res.writeHead(200, { 'Content-Type': types[path.extname(file).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' });

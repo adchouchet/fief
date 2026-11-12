@@ -710,17 +710,23 @@ export function buildSprites(teamHex, k = 1) {
   b.well = B.iso(24, (I) => well(I, rng(71)));
   b.haystack = B.iso(20, (I) => haystack(I, rng(72)));
 
-  // chantiers, par taille d'empreinte
-  const sizes = new Set(Object.values(FOOT).map((f) => f[0] + 'x' + f[1]));
+  out.found = bakeFound(B, FOOT);
+  out.pages = B.pages.map((p) => p.canvas);
+  return out;
+}
+
+/** Chantiers (fondations, échafaudage) pour chaque taille d'empreinte de la table `foot`. */
+export function bakeFound(B, foot) {
+  const found = {};
+  const sizes = new Set(Object.values(foot).map((f) => f[0] + 'x' + f[1]));
   for (const key of sizes) {
     const [a, bb] = key.split('x').map(Number);
-    out.found[key] = {
+    found[key] = {
       foundation: { s: B.bake(a * 12 + 20, (g) => foundation(new Iso(g), rng(80), a, bb)), sh: null },
       scaffold: B.iso(a * 12 + 20, (I) => scaffold(I, rng(81), a, bb)),
     };
   }
-  out.pages = B.pages.map((p) => p.canvas);
-  return out;
+  return found;
 }
 
 /** Dessine un élément ancré en (x, y) logiques, calé sur la grille de pixels réels. */
@@ -729,4 +735,5 @@ export function drawSprite(ctx, s, x, y) {
   ctx.drawImage(s.img, s.sx, s.sy, s.w, s.h, Math.round(x * k - s.ax) / k, Math.round(y * k - s.ay) / k, s.lw, s.lh);
 }
 
-export { shade, rgba };
+// outils de dessin réutilisables par les packs de thèmes
+export { shade, rgba, Baker, drawOak, drawPine, treeShadow, drawRocks, drawBush, campfire, stump };

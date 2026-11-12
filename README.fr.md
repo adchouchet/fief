@@ -28,6 +28,20 @@ Les villageois coupent du bois, cultivent, minent et bâtissent ; les moutons
 broutent ; barques de pêche et navires marchands prennent la mer ; des chemins
 de terre relient le forum aux portes et aux ateliers.
 
+## D'autres thèmes arrivent
+
+Le royaume médiéval est gratuit et le restera. Cinq autres thèmes sont en préparation et sortiront sous forme de packs additionnels payants : le même principe, un monde différent à chaque fois.
+
+| Japon féodal | Îles aux pirates | Fjords du Nord |
+| :---: | :---: | :---: |
+| ![Japon féodal : une ville de château parmi les cerisiers](docs/img/pack-japon.jpg) | ![Îles aux pirates : un fortin de corail sous pavillon noir](docs/img/pack-pirates.jpg) | ![Fjords du Nord : des halles de bois sous la neige](docs/img/pack-vikings.jpg) |
+
+| Oasis d'Égypte | Colonie stellaire |
+| :---: | :---: |
+| ![Oasis d'Égypte : une pyramide parmi les dattiers](docs/img/pack-egypte.jpg) | ![Colonie stellaire : un astroport sur un astéroïde](docs/img/pack-espace.jpg) |
+
+Pour être prévenu de chaque sortie, utilisez **Watch → Custom → Releases** en haut de cette page.
+
 ## Télécharger et lancer
 
 1. Récupérez `Fief-x.y.z-win-x64.zip` dans la [dernière version](../../releases/latest).

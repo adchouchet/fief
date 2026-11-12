@@ -1,3 +1,6 @@
+# packs de thèmes payants : jamais dans le dépôt public
+/packs/
+
 # sorties de compilation
 host/bin/
 host/obj/

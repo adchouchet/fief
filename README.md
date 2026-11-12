@@ -27,6 +27,20 @@ ones rise from their scaffolding.
 Villagers chop wood, farm, mine and build; sheep graze; fishing boats and
 merchant ships sail; dirt paths link the town hall to the gates and workshops.
 
+## More themes are on the way
+
+The medieval kingdom is free and stays free. Five more themes are in the works and will be released as paid add-on packs: the same idea, a different world each time.
+
+| Feudal Japan | Pirate isles | Northern fjords |
+| :---: | :---: | :---: |
+| ![Feudal Japan: a castle town among cherry trees](docs/img/pack-japon.jpg) | ![Pirate isles: a coral fort under a black flag](docs/img/pack-pirates.jpg) | ![Northern fjords: timber halls under snow](docs/img/pack-vikings.jpg) |
+
+| Oasis of Egypt | Star colony |
+| :---: | :---: |
+| ![Oasis of Egypt: a pyramid among date palms](docs/img/pack-egypte.jpg) | ![Star colony: a spaceport on an asteroid](docs/img/pack-espace.jpg) |
+
+To hear about each release, use **Watch → Custom → Releases** at the top of this page.
+
 ## Download and run
 
 1. Get `Fief-x.y.z-win-x64.zip` from the [latest release](../../releases/latest).

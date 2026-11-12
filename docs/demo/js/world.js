@@ -52,8 +52,12 @@ export function clusterIcons(rects, gap = 118) {
 }
 
 export class World {
-  constructor(grid, field, sprites, S) {
-    this.grid = grid; this.field = field; this.sp = sprites; this.S = S;
+  /** theme : pack de thème éventuel (types de bâtiments, quotas et notes de placement en plus). */
+  constructor(grid, field, sprites, S, theme = {}) {
+    this.grid = grid; this.field = field; this.sp = sprites; this.S = S; this.theme = theme;
+    this.foot = { ...FOOT, ...(theme.foot || {}) };
+    this.rule = { ...RULE, ...(theme.rules || {}) };
+    this.order = ORDER.concat(theme.extraTypes || []);
     const N = grid.N;
     this.terr = new Uint8Array(N);
     this.dist = new Float32Array(N);
@@ -234,6 +238,7 @@ export class World {
     const g = this.grid, d = this.dist[k];
     const i = (k / g.NJ) | 0, j = k % g.NJ;
     const h = hash2(i, j, this.S.seed + salt);
+    if (this.theme.score) { const custom = this.theme.score(type, this, C, k, h); if (custom !== undefined) return custom; }
     const near = (o, w) => (o ? Math.hypot(g.cx[k] - o.x, (g.cy[k] - o.y) * 2) * w : 0);
     switch (type) {
       case 'tc': case 'castle': return d + h * 10;
@@ -254,9 +259,9 @@ export class World {
 
   place(type, C, n) {
     const g = this.grid, NJ = g.NJ;
-    const [a, b] = FOOT[type], rule = RULE[type];
+    const [a, b] = this.foot[type], rule = this.rule[type];
     const lists = rule === 'out' ? [C.outerTiles, C.townTiles] : [C.townTiles];
-    const salt = SALT[type] + n * 17;
+    const salt = (SALT[type] || 3000 + type.length * 97 + type.charCodeAt(0)) + n * 17;
     let best = -1, bs = 1e9;
     for (const list of lists) {
       for (let q = 0; q < list.length; q++) {
@@ -293,7 +298,7 @@ export class World {
     for (const o of this.buildings) {
       const ck = g.idx(o.i0 + ((o.a - 1) >> 1), o.j0 + ((o.b - 1) >> 1));
       const c = this.cl[ck], C = c >= 0 ? clusters[c] : null;
-      const ok = C && (o.type === 'dock' ? this.dockFits(o.i0, o.j0, C) : this.fits(o.i0, o.j0, o.a, o.b, C, RULE[o.type]));
+      const ok = C && (o.type === 'dock' ? this.dockFits(o.i0, o.j0, C) : this.fits(o.i0, o.j0, o.a, o.b, C, this.rule[o.type]));
       if (!ok) { this.kill(o); continue; }
       o.cluster = C.id;
       this.occupy(o);
@@ -302,7 +307,7 @@ export class World {
     }
     this.buildings = keep;
     for (const C of clusters) {
-      const q = quota(C);
+      const q = this.theme.quota ? this.theme.quota(C, quota) : quota(C);
       // surplus : on démolit les plus éloignés
       for (const type in C.b) {
         const have = C.b[type], want = q[type] || 0;
@@ -311,7 +316,7 @@ export class World {
           while (have.length > want) this.demolish(have.pop());
         }
       }
-      for (const type of ORDER) {
+      for (const type of this.order) {
         const want = q[type] || 0;
         const have = C.b[type] || (C.b[type] = []);
         for (let n = have.length; n < want; n++) if (!this.place(type, C, n)) break;
@@ -534,7 +539,8 @@ export class World {
         const i = (k / NJ) | 0, j = k % NJ;
         const hv = hash2(i, j, seed + 33);
         let e, kind = 'tree';
-        if (type === 'oak') e = this.sp.trees[hv < 0.03 ? 9 : (hv * 9) | 0];
+        const T = this.sp.trees;
+        if (type === 'oak') e = T[hv < 0.03 ? T.length - 1 : (hv * (T.length - 1)) | 0]; // le dernier est la variété rare
         else if (type === 'pine') e = this.sp.pines[(hv * this.sp.pines.length) | 0];
         else { kind = 'rock'; const src = type === 'bush' ? [this.sp.bush] : this.sp[type]; e = src[(hv * src.length) | 0]; }
         o = this.make(kind, type, e, i, j, 1, 1);

@@ -135,6 +135,15 @@
   .map p { font-size: 16px; line-height: 1.4; margin-top: 6px; color: var(--ink-2); }
   @media (max-width: 860px) { .maps { grid-template-columns: 1fr; } }
 
+  /* ---------- thèmes à venir */
+  .map .shot { position: relative; padding: 0; }
+  .soon { position: absolute; left: 12px; top: 12px; padding: 5px 11px; border-radius: 999px; background: rgba(20, 24, 32, .8); color: #fff; font: 700 12px/1 var(--text); letter-spacing: .09em; text-transform: uppercase; }
+  .map.next { display: flex; align-items: center; background: linear-gradient(160deg, rgba(169, 120, 31, .2), rgba(255, 255, 255, .55)); }
+  .map.next div { padding: 28px 26px; }
+  .map.next h3 { font-size: 25px; }
+  .map.next .btn { margin-top: 18px; font-size: 16px; padding: 13px 18px; }
+  .map.next .btn svg { width: 19px; height: 19px; }
+
   /* ---------- téléchargement */
   .get { margin-top: clamp(56px, 9vw, 110px); background: linear-gradient(160deg, #1b4763, #12303f); color: #f4ecd9; border-radius: 26px; padding: clamp(28px, 5vw, 56px); display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(24px, 4vw, 56px); align-items: center; box-shadow: 0 30px 70px -36px rgba(20, 30, 40, .8); }
   .get .eyebrow { color: #e8c675; }
@@ -175,6 +184,7 @@
       <a href="#tiers" data-i18n="nav.tiers"></a>
       <a href="#world" data-i18n="nav.world"></a>
       <a href="#maps" data-i18n="nav.maps"></a>
+      <a href="#themes" data-i18n="nav.themes"></a>
       <a href="#faq" data-i18n="nav.faq"></a>
       <a href="#get" data-i18n="nav.get"></a>
     </nav>
@@ -262,6 +272,22 @@
     </div>
   </section>
 
+  <section id="themes">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="themes.eyebrow"></div>
+      <h2 data-i18n="themes.title"></h2>
+      <p class="lede" data-i18n="themes.lede"></p>
+      <div class="maps">
+        <article class="map"><div class="shot"><img src="img/pack-japon.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="pack1.alt"><span class="soon" data-i18n="themes.soon"></span></div><div><h3 data-i18n="pack1.name"></h3><p data-i18n="pack1.text"></p></div></article>
+        <article class="map"><div class="shot"><img src="img/pack-pirates.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="pack2.alt"><span class="soon" data-i18n="themes.soon"></span></div><div><h3 data-i18n="pack2.name"></h3><p data-i18n="pack2.text"></p></div></article>
+        <article class="map"><div class="shot"><img src="img/pack-vikings.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="pack3.alt"><span class="soon" data-i18n="themes.soon"></span></div><div><h3 data-i18n="pack3.name"></h3><p data-i18n="pack3.text"></p></div></article>
+        <article class="map"><div class="shot"><img src="img/pack-egypte.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="pack4.alt"><span class="soon" data-i18n="themes.soon"></span></div><div><h3 data-i18n="pack4.name"></h3><p data-i18n="pack4.text"></p></div></article>
+        <article class="map"><div class="shot"><img src="img/pack-espace.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="pack5.alt"><span class="soon" data-i18n="themes.soon"></span></div><div><h3 data-i18n="pack5.name"></h3><p data-i18n="pack5.text"></p></div></article>
+        <article class="map next"><div><h3 data-i18n="themes.next.title"></h3><p data-i18n="themes.next.text"></p><a class="btn primary" id="watch" href="#" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span data-i18n="themes.next.cta"></span></a></div></article>
+      </div>
+    </div>
+  </section>
+
   <div class="wrap">
     <div class="get" id="get">
       <div>
@@ -294,6 +320,7 @@
         <details><summary data-i18n="q4"></summary><p data-i18n="a4"></p></details>
         <details><summary data-i18n="q5"></summary><p data-i18n="a5"></p></details>
         <details><summary data-i18n="q6"></summary><p data-i18n="a6"></p></details>
+        <details><summary data-i18n="q7"></summary><p data-i18n="a7"></p></details>
       </div>
     </div>
   </section>
@@ -313,7 +340,7 @@ const REPO_URL = 'https://github.com/adchouchet/fief';
 const STR = {
   en: {
     'doc.title': 'Fief — a wallpaper that builds a kingdom around your icons',
-    'nav.tiers': 'Settlements', 'nav.world': 'How it works', 'nav.maps': 'Maps', 'nav.faq': 'Questions', 'nav.get': 'Download',
+    'nav.tiers': 'Settlements', 'nav.world': 'How it works', 'nav.maps': 'Maps', 'nav.themes': 'Themes', 'nav.faq': 'Questions', 'nav.get': 'Download',
     'hero.title': 'A wallpaper that builds a <em>kingdom</em> around your icons',
     'hero.sub': 'Fief reads where your desktop icons sit and grows a living medieval world around them.',
     'hero.cta': 'Download for Windows', 'hero.more': 'See how it grows',
@@ -339,6 +366,22 @@ const STR = {
     'map1.name': 'Islands', 'map1.text': 'Sea everywhere. Each group of icons raises its own island.',
     'map2.name': 'Coasts', 'map2.text': 'Land and sea intertwined. Icons win ground back from the water.',
     'map3.name': 'Mainland', 'map3.text': 'One great forest. Icons open clearings in it.',
+    'themes.eyebrow': 'Coming soon', 'themes.title': 'More worlds are on the way',
+    'themes.lede': 'The medieval kingdom is free and stays free. Five more themes are in the works. The idea is the same, your icons shape the land, but everything else changes: buildings, people, ships and light.',
+    'themes.soon': 'In the works',
+    'pack1.name': 'Feudal Japan', 'pack1.text': 'Woodblock colours and cherry trees: pagodas, rice paddies, koi ponds, a torii by the shore, petals on the wind.',
+    'pack1.alt': 'Preview of the Feudal Japan theme: a castle town with grey tiled roofs among cherry trees in bloom.',
+    'pack2.name': 'Pirate isles', 'pack2.text': 'Turquoise lagoons and black flags: buried chests, Skull Rock, and a fort whose cannons thunder now and then.',
+    'pack2.alt': 'Preview of the Pirate isles theme: a coral fort flying a skull flag, palm trees and a rock shaped like a skull.',
+    'pack3.name': 'Northern fjords', 'pack3.text': 'Cold sea and snow: turf-roofed halls, longships on the shingle, ravens overhead.',
+    'pack3.alt': 'Preview of the Northern fjords theme: timber halls under snow, spruces and a snow-capped wall.',
+    'pack4.name': 'Oasis of Egypt', 'pack4.text': 'No sea here, only dunes. Each group of icons makes an oasis bloom, and camel caravans link the cities.',
+    'pack4.alt': 'Preview of the Oasis of Egypt theme: a pyramid, a temple and mud-brick houses among date palms.',
+    'pack5.name': 'Star colony', 'pack5.text': 'A starry void and settled asteroids: domes, greenhouses, a spaceport, shuttles instead of ships.',
+    'pack5.alt': 'Preview of the Star colony theme: a spaceport with its rocket, glass domes and glowing crystals on grey rock.',
+    'themes.next.title': 'Want to know when they land?',
+    'themes.next.text': 'These themes will be released as paid add-on packs. On GitHub, choose Watch, then Custom, then Releases, and you will get a note for each one.',
+    'themes.next.cta': 'Follow on GitHub',
     'get.eyebrow': 'Download', 'get.title': 'Free, and yours to tinker with',
     'get.lede': 'Unzip, run Fief.exe, and the world appears behind your icons. Its shield icon sits near the clock for settings, pause and quit.',
     'get.cta': 'Download Fief for Windows', 'get.source': 'Source code',
@@ -360,12 +403,14 @@ const STR = {
     'a5': 'Yes. Fief places itself in front of other animated wallpapers on the screens it covers. To avoid working the graphics card twice, pause the other one on those screens.',
     'q6': 'How do I remove it?',
     'a6': 'Right-click the shield icon near the clock and choose Quit: your previous wallpaper comes back. Then delete the folder. Settings live in %LOCALAPPDATA%\\Fief.',
+    'q7': 'Will the new themes be free?',
+    'a7': 'The medieval kingdom stays free and open source. The new themes will be paid add-on packs, which is what will fund further work on Fief.',
     'foot.credit': 'The idea of a wallpaper that grows around desktop icons comes from <a href="https://deskland.app/">Deskland</a>. Fief takes up the principle; its code and artwork are original.',
     'foot.legal': 'Fief is an independent project, not affiliated with any game publisher.',
   },
   fr: {
     'doc.title': 'Fief — un fond d\'écran qui bâtit un royaume autour de vos icônes',
-    'nav.tiers': 'Colonies', 'nav.world': 'Fonctionnement', 'nav.maps': 'Cartes', 'nav.faq': 'Questions', 'nav.get': 'Télécharger',
+    'nav.tiers': 'Colonies', 'nav.world': 'Fonctionnement', 'nav.maps': 'Cartes', 'nav.themes': 'Thèmes', 'nav.faq': 'Questions', 'nav.get': 'Télécharger',
     'hero.title': 'Un fond d\'écran qui bâtit un <em>royaume</em> autour de vos icônes',
     'hero.sub': 'Fief lit la position de vos icônes de bureau et fait pousser autour d\'elles un monde médiéval vivant.',
     'hero.cta': 'Télécharger pour Windows', 'hero.more': 'Voir comment il grandit',
@@ -391,6 +436,22 @@ const STR = {
     'map1.name': 'Archipel', 'map1.text': 'La mer partout. Chaque groupe d\'icônes fait surgir son île.',
     'map2.name': 'Côtes', 'map2.text': 'Terres et mers mêlées. Les icônes gagnent du terrain sur l\'eau.',
     'map3.name': 'Continent', 'map3.text': 'Une grande forêt. Les icônes y ouvrent des clairières.',
+    'themes.eyebrow': 'Bientôt', 'themes.title': 'D\'autres mondes arrivent',
+    'themes.lede': 'Le royaume médiéval est gratuit et le restera. Cinq autres thèmes sont en préparation. Le principe ne change pas, vos icônes dessinent le paysage, mais tout le reste change : bâtiments, habitants, navires, lumière.',
+    'themes.soon': 'En préparation',
+    'pack1.name': 'Japon féodal', 'pack1.text': 'Couleurs d\'estampe et cerisiers : pagodes, rizières, bassins aux carpes, un torii au bord de l\'eau, des pétales dans le vent.',
+    'pack1.alt': 'Aperçu du thème Japon féodal : une ville de château aux toits de tuiles grises parmi les cerisiers en fleur.',
+    'pack2.name': 'Îles aux pirates', 'pack2.text': 'Lagons turquoise et pavillons noirs : coffres enfouis, rocher du Crâne, et un fortin dont les canons tonnent de temps à autre.',
+    'pack2.alt': 'Aperçu du thème Îles aux pirates : un fortin de corail sous pavillon noir, des cocotiers et un rocher en forme de crâne.',
+    'pack3.name': 'Fjords du Nord', 'pack3.text': 'Mer froide et neige : halles au toit de tourbe, drakkars tirés sur la grève, corbeaux dans le ciel.',
+    'pack3.alt': 'Aperçu du thème Fjords du Nord : des halles de bois sous la neige, des épicéas et un rempart enneigé.',
+    'pack4.name': 'Oasis d\'Égypte', 'pack4.text': 'Ici, pas de mer : des dunes. Chaque groupe d\'icônes fait fleurir une oasis, et des caravanes de chameaux relient les cités.',
+    'pack4.alt': 'Aperçu du thème Oasis d\'Égypte : une pyramide, un temple et des maisons de brique crue parmi les dattiers.',
+    'pack5.name': 'Colonie stellaire', 'pack5.text': 'Le vide étoilé et des astéroïdes colonisés : dômes, serres, astroport, et des navettes à la place des navires.',
+    'pack5.alt': 'Aperçu du thème Colonie stellaire : un astroport et sa fusée, des dômes de verre et des cristaux lumineux sur la roche grise.',
+    'themes.next.title': 'Envie d\'être prévenu de leur sortie ?',
+    'themes.next.text': 'Ces thèmes sortiront sous forme de packs additionnels payants. Sur GitHub, choisissez Watch, puis Custom, puis Releases : vous recevrez un message à chaque sortie.',
+    'themes.next.cta': 'Suivre sur GitHub',
     'get.eyebrow': 'Télécharger', 'get.title': 'Gratuit, et libre de le bricoler',
     'get.lede': 'Décompressez, lancez Fief.exe, et le monde apparaît derrière vos icônes. Son écu se loge près de l\'horloge pour les réglages, la pause et la fermeture.',
     'get.cta': 'Télécharger Fief pour Windows', 'get.source': 'Code source',
@@ -412,6 +473,8 @@ const STR = {
     'a5': 'Oui. Fief se place devant les autres fonds animés sur les écrans qu\'il couvre. Pour ne pas faire travailler la carte graphique deux fois, mettez l\'autre en pause sur ces écrans.',
     'q6': 'Comment le retirer ?',
     'a6': 'Clic droit sur l\'écu près de l\'horloge, puis Quitter : votre fond d\'origine revient. Supprimez ensuite le dossier. Les réglages sont dans %LOCALAPPDATA%\\Fief.',
+    'q7': 'Les nouveaux thèmes seront-ils gratuits ?',
+    'a7': 'Le royaume médiéval reste gratuit et son code reste ouvert. Les nouveaux thèmes seront des packs additionnels payants : c\'est ce qui financera la suite de Fief.',
     'foot.credit': 'L\'idée d\'un fond d\'écran qui pousse autour des icônes vient de <a href="https://deskland.app/">Deskland</a>. Fief en reprend le principe ; son code et ses dessins sont originaux.',
     'foot.legal': 'Fief est un projet indépendant, sans lien avec un éditeur de jeux.',
   },
@@ -442,7 +505,10 @@ for (const b of document.querySelectorAll('.lang button')) b.addEventListener('c
 });
 applyLang(true);
 
-if (REPO_URL) { const gh = document.getElementById('gh'); gh.href = REPO_URL; gh.hidden = false; }
+if (REPO_URL) {
+  const gh = document.getElementById('gh'); gh.href = REPO_URL; gh.hidden = false;
+  const watch = document.getElementById('watch'); watch.href = REPO_URL; watch.hidden = false;
+}
 
 // la démo cesse de dessiner quand elle sort de l'écran
 let demoVisible = true;
