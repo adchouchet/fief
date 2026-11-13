@@ -28,9 +28,9 @@ Les villageois coupent du bois, cultivent, minent et bâtissent ; les moutons
 broutent ; barques de pêche et navires marchands prennent la mer ; des chemins
 de terre relient le forum aux portes et aux ateliers.
 
-## D'autres thèmes arrivent
+## Cinq autres mondes sur itch.io
 
-Le royaume médiéval est gratuit et le restera. Cinq autres thèmes sont en préparation et sortiront sous forme de packs additionnels payants : le même principe, un monde différent à chaque fois.
+Le royaume médiéval est gratuit et le restera. Cinq autres mondes sont fournis avec la version vendue sur [itch.io](https://adchouchet.itch.io/fief) pour 2,20 $, environ 2 € : le même principe, un monde différent à chaque fois. Vous choisissez le vôtre dans les Réglages, rubrique Thème.
 
 | Japon féodal | Îles aux pirates | Fjords du Nord |
 | :---: | :---: | :---: |
@@ -40,7 +40,7 @@ Le royaume médiéval est gratuit et le restera. Cinq autres thèmes sont en pr�
 | :---: | :---: |
 | ![Oasis d'Égypte : une pyramide parmi les dattiers](docs/img/pack-egypte.jpg) | ![Colonie stellaire : un astroport sur un astéroïde](docs/img/pack-espace.jpg) |
 
-Pour être prévenu de chaque sortie, utilisez **Watch → Custom → Releases** en haut de cette page.
+**[Obtenir les six mondes sur itch.io](https://adchouchet.itch.io/fief)**. Cet achat finance la suite de Fief.
 
 ## Télécharger et lancer
 

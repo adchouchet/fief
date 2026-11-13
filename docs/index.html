@@ -283,7 +283,7 @@
         <article class="map"><div class="shot"><img src="img/pack-vikings.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="pack3.alt"><span class="soon" data-i18n="themes.soon"></span></div><div><h3 data-i18n="pack3.name"></h3><p data-i18n="pack3.text"></p></div></article>
         <article class="map"><div class="shot"><img src="img/pack-egypte.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="pack4.alt"><span class="soon" data-i18n="themes.soon"></span></div><div><h3 data-i18n="pack4.name"></h3><p data-i18n="pack4.text"></p></div></article>
         <article class="map"><div class="shot"><img src="img/pack-espace.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="pack5.alt"><span class="soon" data-i18n="themes.soon"></span></div><div><h3 data-i18n="pack5.name"></h3><p data-i18n="pack5.text"></p></div></article>
-        <article class="map next"><div><h3 data-i18n="themes.next.title"></h3><p data-i18n="themes.next.text"></p><a class="btn primary" id="watch" href="#" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span data-i18n="themes.next.cta"></span></a></div></article>
+        <article class="map next"><div><h3 data-i18n="themes.next.title"></h3><p data-i18n="themes.next.text"></p><a class="btn primary" id="watch" href="#" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span data-i18n="themes.next.cta"></span></a></div></article>
       </div>
     </div>
   </section>
@@ -336,6 +336,8 @@
 <script>
 // Adresse du dépôt GitHub : laisser vide tant qu'il n'existe pas.
 const REPO_URL = 'https://github.com/adchouchet/fief';
+// Page itch.io : la version vendue, avec les cinq mondes en plus.
+const ITCH_URL = 'https://adchouchet.itch.io/fief';
 
 const STR = {
   en: {
@@ -366,9 +368,9 @@ const STR = {
     'map1.name': 'Islands', 'map1.text': 'Sea everywhere. Each group of icons raises its own island.',
     'map2.name': 'Coasts', 'map2.text': 'Land and sea intertwined. Icons win ground back from the water.',
     'map3.name': 'Mainland', 'map3.text': 'One great forest. Icons open clearings in it.',
-    'themes.eyebrow': 'Coming soon', 'themes.title': 'More worlds are on the way',
-    'themes.lede': 'The medieval kingdom is free and stays free. Five more themes are in the works. The idea is the same, your icons shape the land, but everything else changes: buildings, people, ships and light.',
-    'themes.soon': 'In the works',
+    'themes.eyebrow': 'Five more worlds', 'themes.title': 'More worlds, on itch.io',
+    'themes.lede': 'The medieval kingdom is free and stays free. Five more worlds are available on itch.io for $2.20. The idea is the same, your icons shape the land, but everything else changes: buildings, people, ships and light.',
+    'themes.soon': 'On itch.io',
     'pack1.name': 'Feudal Japan', 'pack1.text': 'Woodblock colours and cherry trees: pagodas, rice paddies, koi ponds, a torii by the shore, petals on the wind.',
     'pack1.alt': 'Preview of the Feudal Japan theme: a castle town with grey tiled roofs among cherry trees in bloom.',
     'pack2.name': 'Pirate isles', 'pack2.text': 'Turquoise lagoons and black flags: buried chests, Skull Rock, and a fort whose cannons thunder now and then.',
@@ -379,9 +381,9 @@ const STR = {
     'pack4.alt': 'Preview of the Oasis of Egypt theme: a pyramid, a temple and mud-brick houses among date palms.',
     'pack5.name': 'Star colony', 'pack5.text': 'A starry void and settled asteroids: domes, greenhouses, a spaceport, shuttles instead of ships.',
     'pack5.alt': 'Preview of the Star colony theme: a spaceport with its rocket, glass domes and glowing crystals on grey rock.',
-    'themes.next.title': 'Want to know when they land?',
-    'themes.next.text': 'These themes will be released as paid add-on packs. On GitHub, choose Watch, then Custom, then Releases, and you will get a note for each one.',
-    'themes.next.cta': 'Follow on GitHub',
+    'themes.next.title': 'All six worlds for $2.20',
+    'themes.next.text': 'The version of Fief sold on itch.io includes the five extra worlds. You pick yours in Settings, under Theme. Buying it is what funds further work on Fief.',
+    'themes.next.cta': 'Get them on itch.io',
     'get.eyebrow': 'Download', 'get.title': 'Free, and yours to tinker with',
     'get.lede': 'Unzip, run Fief.exe, and the world appears behind your icons. Its shield icon sits near the clock for settings, pause and quit.',
     'get.cta': 'Download Fief for Windows', 'get.source': 'Source code',
@@ -403,8 +405,8 @@ const STR = {
     'a5': 'Yes. Fief places itself in front of other animated wallpapers on the screens it covers. To avoid working the graphics card twice, pause the other one on those screens.',
     'q6': 'How do I remove it?',
     'a6': 'Right-click the shield icon near the clock and choose Quit: your previous wallpaper comes back. Then delete the folder. Settings live in %LOCALAPPDATA%\\Fief.',
-    'q7': 'Will the new themes be free?',
-    'a7': 'The medieval kingdom stays free and open source. The new themes will be paid add-on packs, which is what will fund further work on Fief.',
+    'q7': 'Are the other worlds free?',
+    'a7': 'The medieval kingdom stays free and open source. The five other worlds come with the version sold on itch.io for $2.20, which is what funds further work on Fief.',
     'foot.credit': 'The idea of a wallpaper that grows around desktop icons comes from <a href="https://deskland.app/">Deskland</a>. Fief takes up the principle; its code and artwork are original.',
     'foot.legal': 'Fief is an independent project, not affiliated with any game publisher.',
   },
@@ -436,9 +438,9 @@ const STR = {
     'map1.name': 'Archipel', 'map1.text': 'La mer partout. Chaque groupe d\'icônes fait surgir son île.',
     'map2.name': 'Côtes', 'map2.text': 'Terres et mers mêlées. Les icônes gagnent du terrain sur l\'eau.',
     'map3.name': 'Continent', 'map3.text': 'Une grande forêt. Les icônes y ouvrent des clairières.',
-    'themes.eyebrow': 'Bientôt', 'themes.title': 'D\'autres mondes arrivent',
-    'themes.lede': 'Le royaume médiéval est gratuit et le restera. Cinq autres thèmes sont en préparation. Le principe ne change pas, vos icônes dessinent le paysage, mais tout le reste change : bâtiments, habitants, navires, lumière.',
-    'themes.soon': 'En préparation',
+    'themes.eyebrow': 'Cinq autres mondes', 'themes.title': 'D\'autres mondes, sur itch.io',
+    'themes.lede': 'Le royaume médiéval est gratuit et le restera. Cinq autres mondes sont disponibles sur itch.io pour 2,20 $, environ 2 €. Le principe ne change pas, vos icônes dessinent le paysage, mais tout le reste change : bâtiments, habitants, navires, lumière.',
+    'themes.soon': 'Sur itch.io',
     'pack1.name': 'Japon féodal', 'pack1.text': 'Couleurs d\'estampe et cerisiers : pagodes, rizières, bassins aux carpes, un torii au bord de l\'eau, des pétales dans le vent.',
     'pack1.alt': 'Aperçu du thème Japon féodal : une ville de château aux toits de tuiles grises parmi les cerisiers en fleur.',
     'pack2.name': 'Îles aux pirates', 'pack2.text': 'Lagons turquoise et pavillons noirs : coffres enfouis, rocher du Crâne, et un fortin dont les canons tonnent de temps à autre.',
@@ -449,9 +451,9 @@ const STR = {
     'pack4.alt': 'Aperçu du thème Oasis d\'Égypte : une pyramide, un temple et des maisons de brique crue parmi les dattiers.',
     'pack5.name': 'Colonie stellaire', 'pack5.text': 'Le vide étoilé et des astéroïdes colonisés : dômes, serres, astroport, et des navettes à la place des navires.',
     'pack5.alt': 'Aperçu du thème Colonie stellaire : un astroport et sa fusée, des dômes de verre et des cristaux lumineux sur la roche grise.',
-    'themes.next.title': 'Envie d\'être prévenu de leur sortie ?',
-    'themes.next.text': 'Ces thèmes sortiront sous forme de packs additionnels payants. Sur GitHub, choisissez Watch, puis Custom, puis Releases : vous recevrez un message à chaque sortie.',
-    'themes.next.cta': 'Suivre sur GitHub',
+    'themes.next.title': 'Les six mondes pour environ 2 €',
+    'themes.next.text': 'La version de Fief vendue sur itch.io (2,20 $) contient les cinq mondes en plus. Vous choisissez le vôtre dans les Réglages, rubrique Thème. Cet achat finance la suite de Fief.',
+    'themes.next.cta': 'Les obtenir sur itch.io',
     'get.eyebrow': 'Télécharger', 'get.title': 'Gratuit, et libre de le bricoler',
     'get.lede': 'Décompressez, lancez Fief.exe, et le monde apparaît derrière vos icônes. Son écu se loge près de l\'horloge pour les réglages, la pause et la fermeture.',
     'get.cta': 'Télécharger Fief pour Windows', 'get.source': 'Code source',
@@ -473,8 +475,8 @@ const STR = {
     'a5': 'Oui. Fief se place devant les autres fonds animés sur les écrans qu\'il couvre. Pour ne pas faire travailler la carte graphique deux fois, mettez l\'autre en pause sur ces écrans.',
     'q6': 'Comment le retirer ?',
     'a6': 'Clic droit sur l\'écu près de l\'horloge, puis Quitter : votre fond d\'origine revient. Supprimez ensuite le dossier. Les réglages sont dans %LOCALAPPDATA%\\Fief.',
-    'q7': 'Les nouveaux thèmes seront-ils gratuits ?',
-    'a7': 'Le royaume médiéval reste gratuit et son code reste ouvert. Les nouveaux thèmes seront des packs additionnels payants : c\'est ce qui financera la suite de Fief.',
+    'q7': 'Les autres mondes sont-ils gratuits ?',
+    'a7': 'Le royaume médiéval reste gratuit et son code reste ouvert. Les cinq autres mondes sont fournis avec la version vendue sur itch.io pour 2,20 $ (environ 2 €) : c\'est ce qui finance la suite de Fief.',
     'foot.credit': 'L\'idée d\'un fond d\'écran qui pousse autour des icônes vient de <a href="https://deskland.app/">Deskland</a>. Fief en reprend le principe ; son code et ses dessins sont originaux.',
     'foot.legal': 'Fief est un projet indépendant, sans lien avec un éditeur de jeux.',
   },
@@ -505,9 +507,9 @@ for (const b of document.querySelectorAll('.lang button')) b.addEventListener('c
 });
 applyLang(true);
 
+{ const watch = document.getElementById('watch'); watch.href = ITCH_URL; watch.hidden = false; }
 if (REPO_URL) {
   const gh = document.getElementById('gh'); gh.href = REPO_URL; gh.hidden = false;
-  const watch = document.getElementById('watch'); watch.href = REPO_URL; watch.hidden = false;
 }
 
 // la démo cesse de dessiner quand elle sort de l'écran

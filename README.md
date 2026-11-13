@@ -27,9 +27,9 @@ ones rise from their scaffolding.
 Villagers chop wood, farm, mine and build; sheep graze; fishing boats and
 merchant ships sail; dirt paths link the town hall to the gates and workshops.
 
-## More themes are on the way
+## Five more worlds on itch.io
 
-The medieval kingdom is free and stays free. Five more themes are in the works and will be released as paid add-on packs: the same idea, a different world each time.
+The medieval kingdom is free and stays free. Five more worlds come with the version sold on [itch.io](https://adchouchet.itch.io/fief) for $2.20: the same idea, a different world each time. You pick yours in Settings, under Theme.
 
 | Feudal Japan | Pirate isles | Northern fjords |
 | :---: | :---: | :---: |
@@ -39,7 +39,7 @@ The medieval kingdom is free and stays free. Five more themes are in the works a
 | :---: | :---: |
 | ![Oasis of Egypt: a pyramid among date palms](docs/img/pack-egypte.jpg) | ![Star colony: a spaceport on an asteroid](docs/img/pack-espace.jpg) |
 
-To hear about each release, use **Watch → Custom → Releases** at the top of this page.
+**[Get the six worlds on itch.io](https://adchouchet.itch.io/fief)**. Buying them is what funds further work on Fief.
 
 ## Download and run
 
