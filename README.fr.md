@@ -37,8 +37,8 @@ de terre relient le forum aux portes et aux ateliers.
   place, un marchand avec sa charrette, le seigneur qui sort avec sa garde,
   une maison qui prend feu (les villageois l'éteignent et la reconstruisent),
   une baleine au large, et parfois l'ombre d'un dragon.
-- **La météo.** Des ombres de nuages passent sur les îles et le vent fait
-  bouger l'herbe. Certains jours il y a de la brume ou un peu de pluie.
+- **La météo.** Des ombres de nuages passent sur les îles, et certains jours
+  il pleut un peu.
 - Il y a aussi des poules, des chiens et des enfants dans les villages.
 
 La nuit et les événements se coupent dans les réglages. Côté performances,

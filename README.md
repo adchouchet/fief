@@ -35,8 +35,8 @@ merchant ships sail; dirt paths link the town hall to the gates and workshops.
   merchant with his cart, the lord riding out with his guard, a house that
   catches fire (the villagers put it out and rebuild it), a whale offshore,
   and sometimes a dragon's shadow.
-- **Weather.** Cloud shadows pass over the islands and the wind moves the
-  grass. Some days there is mist or a bit of rain.
+- **Weather.** Cloud shadows pass over the islands, and some days it rains
+  a bit.
 - There are also hens, dogs and children in the villages.
 
 Night and events can be turned off in the settings. Performance-wise, a frame

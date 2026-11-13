@@ -23,7 +23,7 @@
 //   emitters(objet)                    points de fumée d'un bâtiment, ou undefined pour le comportement de base
 //   ambient(agents, dt)                effets d'ambiance appelés à chaque image
 //   sky {clouds, weather, night, dusk, dawn, gold, amount, light}   ciel (voir sky.js) : force des ombres de nuages,
-//                                      temps possibles (['mist', 'rain']), teintes du soir et de la nuit, part de la
+//                                      temps possibles (['rain'] ou []), teintes du soir et de la nuit, part de la
 //                                      nuit (0 à 1), couleur des fenêtres éclairées ('r,v,b')
 //   lights(objet)                      lumières en plus d'un bâtiment la nuit : [[dx, dy, rayon, force], …]
 //   pets                               false pour n'avoir ni poules ni chiens

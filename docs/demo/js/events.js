@@ -192,7 +192,11 @@ const FIRE = {
         if (h <= 0.02) return;
         c.fillStyle = `rgba(255,150,50,${(0.2 * h).toFixed(3)})`; c.beginPath(); c.ellipse(o.x, o.y - 8, 19, 15, 0, 0, TAU); c.fill();
         const spots = st.burning ? [[-7, -9, 1.3], [0, -16, 1.9], [7, -11, 1.4], [-3, -6, 1.5], [4, -4, 1.3]] : [[-4, -1, 1.1], [2, -2, 1.4], [5, 0, 0.9]];
-        spots.forEach(([dx, dy, s], i) => flame(c, o.x + dx, o.y + dy, s * h, Math.sin(now * (9 + i * 2.3) + i) * 0.6 + Math.sin(now * 15.7 + i * 2) * 0.4));
+        spots.forEach(([dx, dy, s], i) => {
+          const f = Math.sin(now * (9 + i * 2.3) + i) * 0.6 + Math.sin(now * 15.7 + i * 2) * 0.4;
+          flame(c, o.x + dx, o.y + dy, s * h, f);
+          x.sky.flameAt(o.x + dx, o.y + dy, s * h * 1.15, f, 'incendie'); // la nuit, les flammes restent vives
+        });
       },
     };
     A.extra.push(F);
@@ -215,7 +219,7 @@ const FIRE = {
         st.heat = st.burning ? Math.min(1, st.t / 6) : Math.max(0, st.heat - dt / 9);
         st.acc += dt * 5 * st.heat;
         while (st.acc >= 1) { st.acc -= 1; A.parts.push({ x: o.x + (R() - 0.5) * 12, y: o.y - (st.burning ? 14 : 3) - R() * 6, vx: 3 + R() * 5, vy: -9 - R() * 6, life: 0, max: 3 + R() * 2.2, r: 2 + R() * 1.6, col: '66,62,58', a: 0.5, grow: 5.5 }); }
-        if (st.heat > 0.05) x.sky.glow(o.x, o.y - 9, 30 + 26 * st.heat, 0.95 * st.heat, '255,150,60');
+        if (st.heat > 0.05) x.sky.glow(o.x, o.y - 9, 26 + 12 * st.heat, 0.45 * st.heat, '255,150,60');
         if (st.burning && st.t >= 27) {
           // la maison s'effondre, puis elle est rebâtie comme n'importe quel chantier
           st.burning = false;
@@ -268,7 +272,7 @@ const FESTIVAL = {
       update(dt) {
         st.t += dt;
         if (R() < dt * 3) A.parts.push({ x: cx + (R() - 0.5) * 54, y: cy - 22 - R() * 10, vx: (R() - 0.5) * 8, vy: 3, g: 5, life: 0, max: 2.6, r: 0.8, col: pick(['217,74,58', '240,194,58', '63,127,196', '243,239,226']), a: 0.95, grow: 0 });
-        for (const p of poles) x.sky.glow(p.x, p.y - 18, 13, 0.85);
+        for (const p of poles) x.sky.glow(p.x, p.y - 18, 11, 0.6);
         return st.t < 150;
       },
       drawTop(c, now) {

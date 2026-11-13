@@ -120,7 +120,6 @@ function renderFrame(dt, now) {
   events.update(dt, now);
   scene.update(now);
   if (field.step(dt)) { ground.upload(field); drawFog(); }
-  ground.wind = sky.gwind;
   ground.draw(now);
   scene.draw(now, agents.drawables());
   agents.drawTop(scene.dctx, now);

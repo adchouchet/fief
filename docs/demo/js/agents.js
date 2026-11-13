@@ -769,11 +769,11 @@ export class Agents {
       const custom = this.theme.emitters ? this.theme.emitters(o) : undefined;
       if (custom !== undefined) { for (const e of custom) this.emit.push({ ...e, acc: R() }); continue; }
       if (o.type === 'mill') { if (this.theme.millSails !== false) this.over.push(makeSails(o)); }
-      else if (o.type === 'campfire') { this.over.push(makeFire(o)); this.emit.push({ x: o.x, y: o.y - 7, rate: 1.2, acc: R() }); }
+      else if (o.type === 'campfire') { this.over.push(makeFire(o, 1, false, this.sky)); this.emit.push({ x: o.x, y: o.y - 7, rate: 1.2, acc: R() }); }
       else if (o.type === 'smith') this.emit.push({ x: o.x + 14, y: o.y - 26, rate: 2.2, acc: R() });
       else if (o.type === 'house' && o.variant >= 1 && o.id % 2 === 0) this.emit.push(o.variant % 2 ? { x: o.x + 2.6, y: o.y - 22, rate: 0.8, acc: R() } : { x: o.x + 5.5, y: o.y - 18.5, rate: 0.8, acc: R() });
     }
-    for (const f of this.fires) if (!f.building) { this.over.push(makeFire(f, 1.35, true)); this.emit.push({ x: f.x, y: f.y - 9, rate: 1.3, acc: R() }); }
+    for (const f of this.fires) if (!f.building) { this.over.push(makeFire(f, 1.35, true, this.sky)); this.emit.push({ x: f.x, y: f.y - 9, rate: 1.3, acc: R() }); }
   }
 
   setupBirds() {
@@ -942,7 +942,7 @@ function makeSails(o) {
   };
 }
 
-function makeFire(o, s = 1, logs = false) {
+function makeFire(o, s = 1, logs = false, sky = null) {
   return {
     x: o.x, y: o.y, baseY: o.baseY + 0.5, hw: 6 * s, hh: 12 * s,
     draw(c, now) {
@@ -953,6 +953,7 @@ function makeFire(o, s = 1, logs = false) {
       c.fillStyle = '#f2792b'; c.beginPath(); c.moveTo(o.x - 2.6, o.y - 0.5); c.quadraticCurveTo(o.x - 2.4 + f, o.y - 5, o.x + f * 0.8, o.y - 8.5 - f); c.quadraticCurveTo(o.x + 2.6, o.y - 4, o.x + 2.6, o.y - 0.5); c.fill();
       c.fillStyle = '#ffd24a'; c.beginPath(); c.moveTo(o.x - 1.3, o.y - 0.6); c.quadraticCurveTo(o.x - 0.8, o.y - 3, o.x - f * 0.5, o.y - 5.2); c.quadraticCurveTo(o.x + 1.4, o.y - 2.4, o.x + 1.3, o.y - 0.6); c.fill();
       if (s !== 1) c.restore();
+      if (sky) sky.flameAt(o.x, o.y, s, f);
     },
   };
 }

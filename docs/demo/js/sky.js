@@ -1,8 +1,8 @@
-// Le ciel : heure du jour, ombres des nuages, brume et pluie, lumières de la nuit.
+// Le ciel : heure du jour, ombres des nuages, pluie fine, lumières de la nuit.
 //
 // Rien ici ne redessine le monde. Ce sont trois calques posés par-dessus, que
 // la carte graphique mélange toute seule :
-//   #veil    brume, ou tout autre voile fourni par un thème (aurore, tempête de sable) ;
+//   #veil    voile fourni par un thème ou un événement (aurore, tempête de sable) ;
 //   #sky     teinte du jour et de la nuit + ombres des nuages, en multiplication ;
 //   #lights  fenêtres éclairées et feux, dessinés une fois puis laissés tels quels.
 // #veil et #sky sont de très petites images étirées, déplacées par simple
@@ -64,8 +64,11 @@ export function noiseTile(seed, rgb, alpha, n = TILE / RES) {
   return c;
 }
 
-/** La brume du thème de base ; un thème ou un événement peut fournir un autre voile de même forme. */
-export const MIST = { id: 'mist', blend: 'normal', speed: 1.5, tile: () => noiseTile(77, [232, 238, 244], (v) => 0.16 + 0.6 * smoothstep(0.36, 0.72, v)) };
+/** La flamme d'un feu, repeinte par-dessus la teinte de nuit pour qu'elle reste vive (mêmes tracés que makeFire). */
+function paintFlame(c, x, y, s, f) {
+  c.fillStyle = '#f2792b'; c.beginPath(); c.moveTo(x - 2.6 * s, y - 0.5 * s); c.quadraticCurveTo(x + (-2.4 + f) * s, y - 5 * s, x + f * 0.8 * s, y - (8.5 + f) * s); c.quadraticCurveTo(x + 2.6 * s, y - 4 * s, x + 2.6 * s, y - 0.5 * s); c.fill();
+  c.fillStyle = '#ffd24a'; c.beginPath(); c.moveTo(x - 1.3 * s, y - 0.6 * s); c.quadraticCurveTo(x - 0.8 * s, y - 3 * s, x - f * 0.5 * s, y - 5.2 * s); c.quadraticCurveTo(x + 1.4 * s, y - 2.4 * s, x + 1.3 * s, y - 0.6 * s); c.fill();
+}
 
 const RAIN = Array.from({ length: 96 }, (_, i) => [hash2(i, 1, 9), hash2(i, 2, 9), 0.8 + 0.4 * hash2(i, 3, 9)]);
 
@@ -79,13 +82,14 @@ export class Sky {
     this.cloudMask = noiseTile(977, [0, 0, 0], (v) => smoothstep(0.4, 0.62, v), MASK / RES);
     this.tmp = document.createElement('canvas'); this.wrapX = 0; this.wrapY = 0;
     this.theme = {}; this.sk = {}; this.keys = keys({});
-    // réglages de mise au point : ?hour=21.5 fige l'heure, ?weather=rain|mist force le temps
+    // réglages de mise au point : ?hour=21.5 fige l'heure, ?weather=rain force la pluie
     this.hourFixed = query && query.has('hour') ? Number(query.get('hour')) : null;
     this.weatherFixed = query ? query.get('weather') : null;
-    this.t = 0; this.tick = 0; this.wind = [0, 0]; this.gwind = [0, 0];
+    this.t = 0; this.tick = 0; this.wind = [0, 0];
     this.hour = 12; this.night = 0; this.tint = [1, 1, 1]; this.tintKey = '';
     this.weather = 'clear'; this.wAmt = 0; this.wNext = 240 + Math.random() * 360; this.wLeft = 0;
-    this.rain = 0; this.mist = 0;
+    this.rain = 0;
+    this.fg = new Map(); this.prevFg = new Map(); this.near = new Map(); // flammes à repeindre, par feu
     this.veilSpec = null; this.veilAmt = 0; this.extVeil = null; this.extAmt = 0;
     this.items = []; this.fires = []; this.dyn = []; this.prevBox = null;
     this.dirty = true; this.lightKey = ''; this.lightsOn = false; this.skyOn = false; this.veilOn = false;
@@ -96,7 +100,7 @@ export class Sky {
     this.theme = theme || {}; this.sk = this.theme.sky || {};
     this.keys = keys(this.sk);
     this.tintKey = ''; this.dirty = true; this.tick = 0; this.lightKey = '';
-    this.weather = 'clear'; this.wAmt = 0; this.rain = 0; this.mist = 0;
+    this.weather = 'clear'; this.wAmt = 0; this.rain = 0;
     this.extVeil = null; this.extAmt = 0;
   }
 
@@ -128,30 +132,24 @@ export class Sky {
     const a = K[i], b = K[i + 1], u = clamp((h - a[0]) / (b[0] - a[0]), 0, 1);
     const on = this.S.daynight ? (this.sk.amount === undefined ? 1 : this.sk.amount) : 0;
     this.night = lerp(a[4], b[4], u) * (this.S.daynight ? 1 : 0);
-    // sous la pluie ou dans la brume, le jour se voile un peu
-    const grey = Math.max(this.rain, this.mist * 0.6) * 0.16;
+    // sous la pluie, le jour se voile un peu
+    const grey = this.rain * 0.16;
     for (let c = 0; c < 3; c++) this.tint[c] = lerp(1, lerp(a[c + 1], b[c + 1], u), on) * (1 - grey * (c === 2 ? 0.55 : 1));
   }
 
   stepWeather(dt) {
-    const kinds = this.sk.weather || ['mist', 'rain'];
+    const kinds = this.sk.weather || ['rain'];
     const want = this.weatherFixed || (this.S.events > 0 ? null : 'clear');
     if (want) { this.weather = want; this.wLeft = 1e9; }
     else if (this.weather === 'clear') {
       this.wNext -= dt;
-      if (this.wNext <= 0 && kinds.length) {
-        // la brume vient plutôt à l'aube et le soir
-        const edge = this.hour < 9 || this.hour > 19;
-        this.weather = kinds.includes('mist') && (edge ? Math.random() < 0.7 : Math.random() < 0.3) ? 'mist' : kinds.includes('rain') ? 'rain' : kinds[0];
-        this.wLeft = 150 + Math.random() * 210;
-      }
+      if (this.wNext <= 0 && kinds.includes('rain')) { this.weather = 'rain'; this.wLeft = 150 + Math.random() * 210; }
     } else {
       this.wLeft -= dt;
       if (this.wLeft <= 0) { this.weather = 'clear'; this.wNext = (this.S.events > 1 ? 300 : 600) + Math.random() * 600; }
     }
     const k = dt / 30; // une demi-minute pour s'installer ou se lever
     this.rain = clamp(this.rain + (this.weather === 'rain' ? k : -k), 0, 1);
-    this.mist = clamp(this.mist + (this.weather === 'mist' ? k : -k), 0, 1);
   }
 
   // ------------------------------------------------------------ calques
@@ -186,7 +184,7 @@ export class Sky {
   setVeil(spec, amount) { this.extVeil = spec; this.extAmt = spec ? clamp(amount, 0, 1) : 0; }
 
   paintVeil() {
-    const spec = this.extVeil || (this.mist > 0.01 ? MIST : null), amt = this.extVeil ? this.extAmt : this.mist * 0.85;
+    const spec = this.extVeil, amt = this.extAmt;
     const on = !!spec && amt > 0.01;
     if (on !== this.veilOn) { this.veilOn = on; this.veil.style.display = on ? 'block' : 'none'; }
     if (!on) return;
@@ -210,7 +208,6 @@ export class Sky {
     this.wind[0] = this.t * WIND[0]; this.wind[1] = this.t * WIND[1];
     const wx = Math.floor(this.wind[0] / TILE), wy = Math.floor(this.wind[1] / TILE);
     if (wx !== this.wrapX || wy !== this.wrapY) { this.wrapX = wx; this.wrapY = wy; if (this.skyOn) this.paintSky(); }
-    this.gwind[0] = this.wind[0] % 3150; this.gwind[1] = this.wind[1] % 3150; // pour le sol : borné, et sans saut visible
     this.tick -= dt;
     if (this.tick <= 0) {
       this.tick = 2;
@@ -266,7 +263,7 @@ export class Sky {
     const items = (this.items = []);
     const add = (o) => {
       if (o.state !== 'idle') return;
-      if (o.type === 'campfire') { items.push({ x: o.x, y: o.y - 4, r: 44, a: 1 }, { x: o.x, y: o.y - 4, r: 13, a: 1 }); return; }
+      if (o.type === 'campfire') { items.push({ x: o.x, y: o.y - 3, r: 24, a: 0.42 }); return; }
       const extra = this.theme.lights ? this.theme.lights(o) : null;
       if (extra) for (const e of extra) items.push({ x: o.x + e[0], y: o.y + e[1], r: e[2] || 9, a: e[3] || 0.8 });
       const lit = o.e && o.e.lit;
@@ -282,18 +279,20 @@ export class Sky {
     };
     for (const o of world.buildings) add(o);
     for (const o of world.walls.values()) add(o);
-    for (const f of (agents && agents.fires) || []) items.push({ x: f.x, y: f.y - 4, r: 48, a: 1 }, { x: f.x, y: f.y - 4, r: 14, a: 1 });
+    // un feu éclaire doucement autour de lui ; sa flamme est repeinte à part (voir flameAt)
+    for (const f of (agents && agents.fires) || []) if (!f.building) items.push({ x: f.x, y: f.y - 4, r: 28, a: 0.42 });
+    this.near.clear(); this.prevFg.clear();
     this.drawLights(null);
   }
 
-  drawLights(box) {
+  drawLights(box, list = this.items, flames = null) {
     const c = this.lctx, K = this.K, col = this.sk.light || '255,206,120';
     const img = this.glowSprite(col);
     c.setTransform(K, 0, 0, K, 0, 0);
     c.save();
     if (box) { c.beginPath(); c.rect(box[0], box[1], box[2] - box[0], box[3] - box[1]); c.clip(); c.clearRect(box[0], box[1], box[2] - box[0], box[3] - box[1]); }
     else c.clearRect(0, 0, this.W + 1, this.H + 1);
-    for (const it of this.items) {
+    for (const it of list) {
       if (box && (it.x + it.r < box[0] || it.x - it.r > box[2] || it.y + it.r < box[1] || it.y - it.r > box[3])) continue;
       if (it.pts) {
         c.globalAlpha = it.pa; c.fillStyle = `rgb(${col})`;
@@ -306,6 +305,7 @@ export class Sky {
       c.drawImage(d[4] ? this.tinted(d[4]) : img, d[0] - d[2], d[1] - d[2], d[2] * 2, d[2] * 2);
     }
     c.globalAlpha = 1;
+    if (flames) for (const f of flames) paintFlame(c, f[0], f[1], f[2], f[3]);
     c.restore();
   }
 
@@ -325,19 +325,46 @@ export class Sky {
   /** Lumière qui bouge (flammes d'un incendie, lanterne…) : à redemander à chaque image. Sans effet le jour. */
   glow(x, y, r, a = 1, col = null) { if (this.lightsOn) this.dyn.push([x, y, r, a, col]); }
 
-  /** Après le dessin de l'image : ne repeint que la zone où des lumières ont bougé. */
+  /**
+   * Flamme à garder vive la nuit : sous la teinte de nuit elle serait terne. À redemander à chaque image.
+   * Les flammes d'un même groupe (un incendie) partagent une seule zone repeinte.
+   */
+  flameAt(x, y, s, f, group = null) {
+    if (!this.lightsOn) return;
+    const k = group || x + ',' + y;
+    let g = this.fg.get(k);
+    if (!g) this.fg.set(k, (g = []));
+    g.push([x, y, s, f]);
+  }
+
+  /** Après le dessin de l'image : ne repeint que les zones où une lumière a bougé. */
   flush() {
-    if (!this.lightsOn) { this.dyn.length = 0; return; }
-    if (!this.dyn.length && !this.prevBox) return;
-    let box = null;
-    for (const d of this.dyn) {
-      const b = [d[0] - d[2] - 1, d[1] - d[2] - 1, d[0] + d[2] + 1, d[1] + d[2] + 1];
-      box = box ? [Math.min(box[0], b[0]), Math.min(box[1], b[1]), Math.max(box[2], b[2]), Math.max(box[3], b[3])] : b;
+    if (!this.lightsOn) { this.dyn.length = 0; this.fg.clear(); return; }
+    if (this.dyn.length || this.prevBox) {
+      let box = null;
+      for (const d of this.dyn) {
+        const b = [d[0] - d[2] - 1, d[1] - d[2] - 1, d[0] + d[2] + 1, d[1] + d[2] + 1];
+        box = box ? [Math.min(box[0], b[0]), Math.min(box[1], b[1]), Math.max(box[2], b[2]), Math.max(box[3], b[3])] : b;
+      }
+      const p = this.prevBox, all = box && p ? [Math.min(box[0], p[0]), Math.min(box[1], p[1]), Math.max(box[2], p[2]), Math.max(box[3], p[3])] : box || p;
+      this.drawLights(all.map((v, i) => (i < 2 ? Math.floor(v) : Math.ceil(v))));
+      this.prevBox = box;
     }
-    const p = this.prevBox, all = box && p ? [Math.min(box[0], p[0]), Math.min(box[1], p[1]), Math.max(box[2], p[2]), Math.max(box[3], p[3])] : box || p;
-    this.drawLights(all.map((v, i) => (i < 2 ? Math.floor(v) : Math.ceil(v))));
-    this.prevBox = box;
-    this.dyn.length = 0;
+    // les flammes : chaque feu dans sa petite boîte, avec les lumières fixes qui la touchent
+    const hit = (box) => this.items.filter((it) => !(it.x + it.r < box[0] || it.x - it.r > box[2] || it.y + it.r < box[1] || it.y - it.r > box[3]));
+    for (const [k, box] of this.prevFg) if (!this.fg.has(k)) { this.drawLights(box, hit(box)); this.prevFg.delete(k); this.near.delete(k); }
+    for (const [k, g] of this.fg) {
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+      for (const f of g) { x0 = Math.min(x0, f[0] - 4.5 * f[2]); x1 = Math.max(x1, f[0] + 4.5 * f[2]); y0 = Math.min(y0, f[1] - 11 * f[2]); y1 = Math.max(y1, f[1] + 1); }
+      let box = [Math.floor(x0), Math.floor(y0), Math.ceil(x1), Math.ceil(y1)];
+      const old = this.prevFg.get(k);
+      if (old && (old[0] !== box[0] || old[1] !== box[1] || old[2] !== box[2] || old[3] !== box[3])) { box = [Math.min(box[0], old[0]), Math.min(box[1], old[1]), Math.max(box[2], old[2]), Math.max(box[3], old[3])]; this.near.delete(k); }
+      let near = this.near.get(k);
+      if (!near) this.near.set(k, (near = hit(box)));
+      this.drawLights(box, near, g);
+      this.prevFg.set(k, box);
+    }
+    this.dyn.length = 0; this.fg.clear();
   }
 
   // ------------------------------------------------------------ pluie
