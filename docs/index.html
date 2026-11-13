@@ -84,7 +84,8 @@
     .pitch h1 em { color: var(--gold); }
     .pitch p { margin: 12px 0 0; color: var(--ink-2); text-shadow: none; font-size: 18px; }
     .pitch .cta { justify-content: flex-start; margin-top: 18px; }
-    .pitch .cta .onsea { display: none; }
+    .pitch .cta .onsea:not(.itch) { display: none; }
+    .pitch .cta .itch { background: rgba(255, 255, 255, .55); color: var(--ink); border-color: var(--line); backdrop-filter: none; }
     .veil { display: none; }
     .stage { height: 58vh; min-height: 380px; border-radius: 18px; }
     .chip { font-size: 14px; }
@@ -201,7 +202,7 @@
       <p data-i18n="hero.sub"></p>
       <div class="cta">
         <a class="btn primary" href="#get"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="hero.cta"></span></a>
-        <a class="btn onsea" href="#tiers" data-i18n="hero.more"></a>
+        <a class="btn onsea itch" href="https://adchouchet.itch.io/fief"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span data-i18n="hero.itch"></span></a>
       </div>
     </div>
     <div class="stage" id="stage">
@@ -296,6 +297,7 @@
         <p class="lede" data-i18n="get.lede"></p>
         <div class="actions">
           <a class="btn primary" id="dl" href="download/Fief-win-x64.zip" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="get.cta"></span></a>
+          <a class="btn onsea" href="https://adchouchet.itch.io/fief"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span data-i18n="hero.itch"></span></a>
           <a class="btn onsea" id="gh" href="#" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><span data-i18n="get.source"></span></a>
         </div>
         <p class="fine" data-i18n="get.fine"></p>
@@ -345,7 +347,7 @@ const STR = {
     'nav.tiers': 'Settlements', 'nav.world': 'How it works', 'nav.maps': 'Maps', 'nav.themes': 'Themes', 'nav.faq': 'Questions', 'nav.get': 'Download',
     'hero.title': 'A wallpaper that builds a <em>kingdom</em> around your icons',
     'hero.sub': 'Fief reads where your desktop icons sit and grows a living medieval world around them.',
-    'hero.cta': 'Download for Windows', 'hero.more': 'See how it grows',
+    'hero.cta': 'Free version', 'hero.itch': 'All themes on itch.io',
     'hero.chip': 'Live demo: drag the icons',
     'demo.title': 'Live demo of the Fief wallpaper',
     'statement': 'No two desktops are alike. <span>So no two kingdoms are either.</span>',
@@ -386,7 +388,7 @@ const STR = {
     'themes.next.cta': 'Get them on itch.io',
     'get.eyebrow': 'Download', 'get.title': 'Free, and yours to tinker with',
     'get.lede': 'Unzip, run Fief.exe, and the world appears behind your icons. Its shield icon sits near the clock for settings, pause and quit.',
-    'get.cta': 'Download Fief for Windows', 'get.source': 'Source code',
+    'get.cta': 'Download the free version', 'get.source': 'Source code',
     'get.fine': 'Windows 10 or 11, 64-bit. The program is not signed yet, so Windows may show a "Windows protected your PC" notice the first time: choose "More info", then "Run anyway".',
     'get.b1': 'No installer, no account, no ads',
     'get.b2': 'Works across several screens, or on just one',
@@ -415,7 +417,7 @@ const STR = {
     'nav.tiers': 'Colonies', 'nav.world': 'Fonctionnement', 'nav.maps': 'Cartes', 'nav.themes': 'Thèmes', 'nav.faq': 'Questions', 'nav.get': 'Télécharger',
     'hero.title': 'Un fond d\'écran qui bâtit un <em>royaume</em> autour de vos icônes',
     'hero.sub': 'Fief lit la position de vos icônes de bureau et fait pousser autour d\'elles un monde médiéval vivant.',
-    'hero.cta': 'Télécharger pour Windows', 'hero.more': 'Voir comment il grandit',
+    'hero.cta': 'Version gratuite', 'hero.itch': 'Tous les thèmes sur itch.io',
     'hero.chip': 'Démo en direct : déplacez les icônes',
     'demo.title': 'Démo en direct du fond d\'écran Fief',
     'statement': 'Aucun bureau ne ressemble à un autre. <span>Aucun royaume non plus.</span>',
@@ -456,7 +458,7 @@ const STR = {
     'themes.next.cta': 'Les obtenir sur itch.io',
     'get.eyebrow': 'Télécharger', 'get.title': 'Gratuit, et libre de le bricoler',
     'get.lede': 'Décompressez, lancez Fief.exe, et le monde apparaît derrière vos icônes. Son écu se loge près de l\'horloge pour les réglages, la pause et la fermeture.',
-    'get.cta': 'Télécharger Fief pour Windows', 'get.source': 'Code source',
+    'get.cta': 'Télécharger la version gratuite', 'get.source': 'Code source',
     'get.fine': 'Windows 10 ou 11, 64 bits. Le programme n\'est pas encore signé : Windows peut afficher « Windows a protégé votre ordinateur » au premier lancement. Choisissez « Informations complémentaires », puis « Exécuter quand même ».',
     'get.b1': 'Sans installateur, sans compte, sans publicité',
     'get.b2': 'Sur plusieurs écrans, ou sur un seul',
