@@ -104,6 +104,19 @@
       <div class="sw" id="team" role="group"></div>
     </div>
 
+    <h2 data-i18n="set.life"></h2>
+    <div class="row">
+      <label class="toggle"><b data-i18n="set.daynight"></b><input type="checkbox" id="daynight"><i></i></label>
+      <small data-i18n="set.daynightHint"></small>
+    </div>
+    <div class="row">
+      <label><b data-i18n="set.events"></b></label>
+      <div class="seg" id="events" role="group">
+        <button data-v="0" data-i18n="ev.0"></button><button data-v="1" data-i18n="ev.1"></button><button data-v="2" data-i18n="ev.2"></button>
+      </div>
+      <small data-i18n="set.eventsHint"></small>
+    </div>
+
     <h2 data-i18n="set.app"></h2>
     <div class="row">
       <label><b data-i18n="set.fps"></b></label>
@@ -138,6 +151,7 @@ $('screen').setAttribute('aria-label', t('set.screens'));
 $('map').setAttribute('aria-label', t('set.mapAria'));
 $('team').setAttribute('aria-label', t('set.team'));
 $('fps').setAttribute('aria-label', t('set.fpsAria'));
+$('events').setAttribute('aria-label', t('set.events'));
 for (const b of $('fps').children) b.textContent = b.dataset.v + ' ' + t('set.fpsUnit');
 frame.src = 'index.html?preview=1&lang=' + LANG;
 
@@ -162,7 +176,8 @@ function render() {
     el.previousElementSibling.querySelector('span').textContent = FORMAT[id](Number(S[id]));
   }
   $('seed').value = S.seed;
-  for (const id of ['map', 'fps', 'team', 'theme']) for (const b of $(id).children) b.setAttribute('aria-pressed', String(b.dataset.v) === String(S[id]));
+  $('daynight').checked = !!S.daynight;
+  for (const id of ['map', 'fps', 'team', 'theme', 'events']) for (const b of $(id).children) b.setAttribute('aria-pressed', String(b.dataset.v) === String(S[id]));
   $('mapHint').textContent = t('map.' + S.map + '.hint');
 }
 
@@ -192,6 +207,8 @@ $('seed').addEventListener('change', (e) => { const v = Math.max(1, Math.min(999
 $('reroll').addEventListener('click', () => { S.seed = 1 + Math.floor(Math.random() * 999998); push(); });
 for (const id of ['map', 'team', 'theme']) $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S[id] = b.dataset.v; push(); } });
 $('fps').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.fps = Number(b.dataset.v); push(); } });
+$('events').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.events = Number(b.dataset.v); push(); } });
+$('daynight').addEventListener('change', (e) => { S.daynight = e.target.checked ? 1 : 0; push(); });
 $('reset').addEventListener('click', () => { Object.assign(S, DEFAULTS); push(); });
 $('autostart').addEventListener('change', (e) => { if (hosted) window.chrome.webview.postMessage('autostart:' + (e.target.checked ? 1 : 0)); });
 

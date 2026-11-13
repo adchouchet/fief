@@ -6,6 +6,11 @@ bureau : chaque groupe d'icônes fonde une colonie (campement, hameau,
 village, bourg fortifié, cité). Déplacez, ajoutez ou supprimez une
 icône, et le monde réagit.
 
+Le monde suit aussi votre journée : le soir tombe à l'heure de
+l'ordinateur, les fenêtres s'allument, et de temps en temps il se
+passe quelque chose (une fête, une caravane, un incendie…). Tout cela
+se règle ou se coupe dans Réglages, rubrique « Vie du monde ».
+
 Fief se loge près de l'horloge sous la forme d'un petit écu bleu.
 Clic droit dessus : Réglages, Écrans, Mettre en pause, Lancer au
 démarrage de Windows, Quitter.

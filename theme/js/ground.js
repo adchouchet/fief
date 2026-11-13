@@ -24,7 +24,8 @@ uniform vec3 uShal, uMid, uDeepA, uDeepB, uSeabed, uFoam;
 uniform vec3 uGrassA, uGrassB, uGrassC, uForest;
 uniform vec3 uDirtA, uDirtB, uDirtC, uPebble;
 uniform vec3 uSandA, uSandB, uInkCol;
-uniform float uInk, uBand, uSparkle, uGrain, uBeach, uFlow, uSurf, uStars, uCrest, uPatch;
+uniform float uInk, uBand, uSparkle, uGrain, uBeach, uFlow, uSurf, uStars, uCrest, uPatch, uGust;
+uniform vec2 uWind;
 out vec4 outc;
 
 vec3 water(vec2 p, float h, vec4 n1, vec4 n2){
@@ -66,6 +67,10 @@ vec3 land(vec2 p, float h, vec4 F, vec4 n1, vec4 n2, vec4 n3){
   g = mix(g, uGrassC, smoothstep(.52,.8,n2.b)*uPatch);
   g *= 1. + (.14*n1.a - .07) * uGrain;
   g *= 1. + (.1*n3.b - .05) * uGrain;
+  // rafales : de grandes nappes claires, striées, que le vent pousse à travers l'herbe
+  float gw = texture(uNoise, (p - uWind*4.) / 900.).r;
+  float gs = texture(uNoise, (p - uWind*6.) / vec2(150., 420.)).b;
+  g *= 1. + smoothstep(.54, .72, gw) * smoothstep(.38, .68, gs) * .1 * uGust;
   // sous-bois
   g = mix(g, uForest*(.9+.2*n1.a), clamp(F.b*.85, 0., 1.));
   // terre battue : cours autour des icônes, abords des bâtiments, chemins
@@ -121,6 +126,7 @@ export const DEFAULT_GROUND = {
   stars: 0,    // étoiles dans la « mer »
   crest: 1,    // fines lignes de crête de la houle (0 = aucune)
   patch: 0.6,  // force des plaques de la troisième teinte d'herbe (1 = plaques franches : neige)
+  gust: 1,     // rafales de vent dans l'herbe (0 = aucune)
 };
 const PALETTE_UNIFORMS = Object.keys(DEFAULT_GROUND).map((k) => [k, 'u' + k[0].toUpperCase() + k.slice(1)]);
 
@@ -164,6 +170,7 @@ export class Ground {
     this.canvas = canvas;
     this.ok = false;
     this.fieldDims = '';
+    this.wind = [0, 0]; // déplacement cumulé du vent (px logiques), fourni par sky.js
     canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); this.ok = false; });
     canvas.addEventListener('webglcontextrestored', () => { this.init(); this.needUpload = true; });
     this.init();
@@ -197,7 +204,7 @@ export class Ground {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
     this.u = {};
-    for (const name of ['uField', 'uNoise', 'uRes', 'uGrid', 'uCS', 'uTime', 'uHScale', 'uK']) this.u[name] = gl.getUniformLocation(prog, name);
+    for (const name of ['uField', 'uNoise', 'uRes', 'uGrid', 'uCS', 'uTime', 'uHScale', 'uK', 'uWind']) this.u[name] = gl.getUniformLocation(prog, name);
     for (const [, name] of PALETTE_UNIFORMS) this.u[name] = gl.getUniformLocation(prog, name);
 
     this.noiseTex = gl.createTexture();
@@ -269,6 +276,7 @@ export class Ground {
     gl.uniform1f(u.uTime, time);
     gl.uniform1f(u.uHScale, HSCALE);
     gl.uniform1f(u.uK, this.k || 1);
+    gl.uniform2f(u.uWind, this.wind[0], this.wind[1]);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 }

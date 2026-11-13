@@ -15,6 +15,8 @@ export const DEFAULTS = {
   team: 'bleu',      // couleur du joueur
   boats: 1.0,        // navires (multiplicateur)
   wildlife: 1.0,     // animaux (multiplicateur)
+  daynight: 1,       // jour et nuit suivent l'heure de l'ordinateur (0 = toujours plein jour)
+  events: 1,         // événements et météo : 0 jamais, 1 rares, 2 fréquents
   fps: 30,
   zoom: 1.0,         // taille du monde (multiplie l'échelle d'affichage de Windows)
 };

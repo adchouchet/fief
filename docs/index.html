@@ -260,6 +260,21 @@
     </div>
   </section>
 
+  <section id="life">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="life.eyebrow"></div>
+      <h2 data-i18n="life.title"></h2>
+      <p class="lede" data-i18n="life.lede"></p>
+      <div class="maps">
+        <article class="map"><img src="img/life-night.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="life1.alt"><div><h3 data-i18n="life1.name"></h3><p data-i18n="life1.text"></p></div></article>
+        <article class="map"><img src="img/life-festival.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="life2.alt"><div><h3 data-i18n="life2.name"></h3><p data-i18n="life2.text"></p></div></article>
+        <article class="map"><img src="img/life-mist.jpg" width="1100" height="756" loading="lazy" alt="" data-i18n-alt="life3.alt"><div><h3 data-i18n="life3.name"></h3><p data-i18n="life3.text"></p></div></article>
+      </div>
+      <p class="lede" data-i18n="life.note"></p>
+      <p style="margin-top: 22px"><a class="btn ghost" id="nightDemo" href="demo/index.html?layout=hero&amp;hour=22" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></svg><span data-i18n="life.night"></span></a></p>
+    </div>
+  </section>
+
   <section id="maps">
     <div class="wrap">
       <div class="eyebrow" data-i18n="maps.eyebrow"></div>
@@ -365,6 +380,16 @@ const STR = {
     'f2.title': 'It is alive', 'f2.text': 'Woodcutters, farmers, miners and builders go about their work. Sheep graze, fishing boats head out, merchant ships cross the open sea, smoke drifts from the forge.',
     'f3.title': 'It stays out of your way', 'f3.text': 'Fief pauses by itself as soon as your windows cover the desktop. Choose 15, 30 or 60 frames per second, and which screens it covers.',
     'f4.title': 'It never looks at your files', 'f4.text': 'Only the position of each icon is read: never names, never contents. Nothing leaves your computer, and there is no account.',
+    'life.eyebrow': 'Living world', 'life.title': 'It keeps going while you work',
+    'life.lede': 'Fief follows your day. Nothing here asks for your attention: glance at the desktop now and then, and something has changed.',
+    'life1.name': 'Evening falls', 'life1.text': 'Day and night follow your computer\'s clock. At dusk the windows light up, villagers gather round the fire, then go home to sleep.',
+    'life1.alt': 'A village at night: lit windows, a fire on the square and torches at the town gate.',
+    'life2.name': 'Something is happening', 'life2.text': 'Now and then, one event at a time: a festival, a merchant\'s cart, the lord\'s procession, a house on fire that the village puts out and rebuilds, a whale offshore, a dragon\'s shadow.',
+    'life2.alt': 'A festival in front of the town hall: bunting strung between poles and villagers dancing in a ring.',
+    'life3.name': 'The weather turns', 'life3.text': 'Cloud shadows drift over the islands, gusts ripple through the grass, and some mornings bring mist or a light rain.',
+    'life3.alt': 'Morning mist drifting over a walled town and its fields.',
+    'life.note': 'Hens, dogs and children roam the villages. Day and night, and how often events happen, are yours to set or switch off.',
+    'life.night': 'See the demo at night',
     'maps.eyebrow': 'Maps', 'maps.title': 'Three ways to lay out the realm',
     'maps.lede': 'Pick the map, the world seed, how wild the coast is, how dense the forests are, and your banner colour.',
     'map1.name': 'Islands', 'map1.text': 'Sea everywhere. Each group of icons raises its own island.',
@@ -373,15 +398,15 @@ const STR = {
     'themes.eyebrow': 'Five more worlds', 'themes.title': 'More worlds, on itch.io',
     'themes.lede': 'The medieval kingdom is free and stays free. Five more worlds are available on itch.io for $2.20. The idea is the same, your icons shape the land, but everything else changes: buildings, people, ships and light.',
     'themes.soon': 'On itch.io',
-    'pack1.name': 'Feudal Japan', 'pack1.text': 'Woodblock colours and cherry trees: pagodas, rice paddies, koi ponds, a torii by the shore, petals on the wind.',
+    'pack1.name': 'Feudal Japan', 'pack1.text': 'Woodblock colours and cherry trees: pagodas, rice paddies, koi ponds, a torii by the shore, petals on the wind, and paper lanterns rising at night.',
     'pack1.alt': 'Preview of the Feudal Japan theme: a castle town with grey tiled roofs among cherry trees in bloom.',
-    'pack2.name': 'Pirate isles', 'pack2.text': 'Turquoise lagoons and black flags: buried chests, Skull Rock, and a fort whose cannons thunder now and then.',
+    'pack2.name': 'Pirate isles', 'pack2.text': 'Turquoise lagoons and black flags: buried chests, Skull Rock, and a fort whose cannons thunder now and then. A kraken and a ghost ship prowl offshore.',
     'pack2.alt': 'Preview of the Pirate isles theme: a coral fort flying a skull flag, palm trees and a rock shaped like a skull.',
-    'pack3.name': 'Northern fjords', 'pack3.text': 'Cold sea and snow: turf-roofed halls, longships on the shingle, ravens overhead.',
+    'pack3.name': 'Northern fjords', 'pack3.text': 'Cold sea and snow: turf-roofed halls, longships on the shingle, ravens overhead, raids at sea and northern lights.',
     'pack3.alt': 'Preview of the Northern fjords theme: timber halls under snow, spruces and a snow-capped wall.',
-    'pack4.name': 'Oasis of Egypt', 'pack4.text': 'No sea here, only dunes. Each group of icons makes an oasis bloom, and camel caravans link the cities.',
+    'pack4.name': 'Oasis of Egypt', 'pack4.text': 'No sea here, only dunes. Each group of icons makes an oasis bloom, and camel caravans link the cities. Now and then a sandstorm rolls in.',
     'pack4.alt': 'Preview of the Oasis of Egypt theme: a pyramid, a temple and mud-brick houses among date palms.',
-    'pack5.name': 'Star colony', 'pack5.text': 'A starry void and settled asteroids: domes, greenhouses, a spaceport, shuttles instead of ships.',
+    'pack5.name': 'Star colony', 'pack5.text': 'A starry void and settled asteroids: domes, greenhouses, a spaceport, shuttles instead of ships, meteor showers and comets.',
     'pack5.alt': 'Preview of the Star colony theme: a spaceport with its rocket, glass domes and glowing crystals on grey rock.',
     'themes.next.title': 'All six worlds for $2.20',
     'themes.next.text': 'The version of Fief sold on itch.io includes the five extra worlds. You pick yours in Settings, under Theme. Buying it is what funds further work on Fief.',
@@ -435,6 +460,16 @@ const STR = {
     'f2.title': 'Il vit', 'f2.text': 'Bûcherons, fermiers, mineurs et bâtisseurs vaquent à leurs tâches. Les moutons broutent, les barques partent pêcher, les navires marchands croisent au large, la fumée monte de la forge.',
     'f3.title': 'Il se fait oublier', 'f3.text': 'Fief se met en pause tout seul dès que vos fenêtres couvrent le bureau. Choisissez 15, 30 ou 60 images par seconde, et les écrans qu\'il occupe.',
     'f4.title': 'Il ne regarde jamais vos fichiers', 'f4.text': 'Seule la position de chaque icône est lue : jamais les noms, jamais les contenus. Rien ne quitte votre ordinateur, et il n\'y a pas de compte à créer.',
+    'life.eyebrow': 'Vie du monde', 'life.title': 'Il continue de vivre pendant que vous travaillez',
+    'life.lede': 'Fief suit votre journée. Rien ne réclame votre attention : jetez un œil au bureau de temps en temps, quelque chose a changé.',
+    'life1.name': 'Le soir tombe', 'life1.text': 'Le jour et la nuit suivent l\'heure de votre ordinateur. Au crépuscule les fenêtres s\'allument, on veille autour du feu, puis chacun rentre dormir.',
+    'life1.alt': 'Un village la nuit : fenêtres éclairées, feu sur la place et torches à la porte du bourg.',
+    'life2.name': 'Il se passe quelque chose', 'life2.text': 'De temps en temps, un seul événement à la fois : un jour de fête, la charrette d\'un marchand, le cortège du seigneur, une maison en feu que le village éteint puis rebâtit, une baleine au large, l\'ombre d\'un dragon.',
+    'life2.alt': 'Un jour de fête devant le forum : des fanions tendus entre des mâts et des villageois qui dansent en rond.',
+    'life3.name': 'Le temps change', 'life3.text': 'L\'ombre des nuages glisse sur les îles, le vent couche l\'herbe par rafales, et certains matins amènent la brume ou une pluie fine.',
+    'life3.alt': 'La brume du matin qui dérive sur un bourg fortifié et ses champs.',
+    'life.note': 'Poules, chiens et enfants animent les villages. Le jour et la nuit, comme la fréquence des événements, se règlent ou se coupent.',
+    'life.night': 'Voir la démo de nuit',
     'maps.eyebrow': 'Cartes', 'maps.title': 'Trois façons de dessiner le royaume',
     'maps.lede': 'Choisissez la carte, la graine du monde, la sinuosité des côtes, la densité des forêts et la couleur de votre bannière.',
     'map1.name': 'Archipel', 'map1.text': 'La mer partout. Chaque groupe d\'icônes fait surgir son île.',
@@ -443,15 +478,15 @@ const STR = {
     'themes.eyebrow': 'Cinq autres mondes', 'themes.title': 'D\'autres mondes, sur itch.io',
     'themes.lede': 'Le royaume médiéval est gratuit et le restera. Cinq autres mondes sont disponibles sur itch.io pour 2,20 $, environ 2 €. Le principe ne change pas, vos icônes dessinent le paysage, mais tout le reste change : bâtiments, habitants, navires, lumière.',
     'themes.soon': 'Sur itch.io',
-    'pack1.name': 'Japon féodal', 'pack1.text': 'Couleurs d\'estampe et cerisiers : pagodes, rizières, bassins aux carpes, un torii au bord de l\'eau, des pétales dans le vent.',
+    'pack1.name': 'Japon féodal', 'pack1.text': 'Couleurs d\'estampe et cerisiers : pagodes, rizières, bassins aux carpes, un torii au bord de l\'eau, des pétales dans le vent et, la nuit, des lanternes qui s\'élèvent.',
     'pack1.alt': 'Aperçu du thème Japon féodal : une ville de château aux toits de tuiles grises parmi les cerisiers en fleur.',
-    'pack2.name': 'Îles aux pirates', 'pack2.text': 'Lagons turquoise et pavillons noirs : coffres enfouis, rocher du Crâne, et un fortin dont les canons tonnent de temps à autre.',
+    'pack2.name': 'Îles aux pirates', 'pack2.text': 'Lagons turquoise et pavillons noirs : coffres enfouis, rocher du Crâne, et un fortin dont les canons tonnent de temps à autre. Au large rôdent un kraken et un vaisseau fantôme.',
     'pack2.alt': 'Aperçu du thème Îles aux pirates : un fortin de corail sous pavillon noir, des cocotiers et un rocher en forme de crâne.',
-    'pack3.name': 'Fjords du Nord', 'pack3.text': 'Mer froide et neige : halles au toit de tourbe, drakkars tirés sur la grève, corbeaux dans le ciel.',
+    'pack3.name': 'Fjords du Nord', 'pack3.text': 'Mer froide et neige : halles au toit de tourbe, drakkars tirés sur la grève, corbeaux dans le ciel, raids en mer et aurores boréales.',
     'pack3.alt': 'Aperçu du thème Fjords du Nord : des halles de bois sous la neige, des épicéas et un rempart enneigé.',
-    'pack4.name': 'Oasis d\'Égypte', 'pack4.text': 'Ici, pas de mer : des dunes. Chaque groupe d\'icônes fait fleurir une oasis, et des caravanes de chameaux relient les cités.',
+    'pack4.name': 'Oasis d\'Égypte', 'pack4.text': 'Ici, pas de mer : des dunes. Chaque groupe d\'icônes fait fleurir une oasis, et des caravanes de chameaux relient les cités. Parfois, une tempête de sable se lève.',
     'pack4.alt': 'Aperçu du thème Oasis d\'Égypte : une pyramide, un temple et des maisons de brique crue parmi les dattiers.',
-    'pack5.name': 'Colonie stellaire', 'pack5.text': 'Le vide étoilé et des astéroïdes colonisés : dômes, serres, astroport, et des navettes à la place des navires.',
+    'pack5.name': 'Colonie stellaire', 'pack5.text': 'Le vide étoilé et des astéroïdes colonisés : dômes, serres, astroport, des navettes à la place des navires, pluies de météores et comètes.',
     'pack5.alt': 'Aperçu du thème Colonie stellaire : un astroport et sa fusée, des dômes de verre et des cristaux lumineux sur la roche grise.',
     'themes.next.title': 'Les six mondes pour environ 2 €',
     'themes.next.text': 'La version de Fief vendue sur itch.io (2,20 $) contient les cinq mondes en plus. Vous choisissez le vôtre dans les Réglages, rubrique Thème. Cet achat finance la suite de Fief.',
@@ -499,7 +534,7 @@ function applyLang(reloadDemo) {
   for (const b of document.querySelectorAll('.lang button')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
   document.querySelectorAll('.scene').forEach((c, i) => c.setAttribute('aria-label', t['tier' + i + '.name'] + ' — ' + t['tier' + i + '.text']));
   demo.title = t['demo.title'];
-  if (reloadDemo) demo.src = 'demo/index.html?layout=hero&quiet=1&lang=' + lang;
+  if (reloadDemo) demo.src = 'demo/index.html?layout=hero&quiet=1&daynight=0&lang=' + lang;
 }
 for (const b of document.querySelectorAll('.lang button')) b.addEventListener('click', () => {
   if (b.dataset.lang === lang) return;

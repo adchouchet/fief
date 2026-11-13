@@ -35,6 +35,14 @@ export class Iso {
   constructor(ctx) {
     this.c = ctx;
     this.sh = []; // points d'ombre (au sol, coordonnées écran)
+    this.lit = []; // ouvertures sombres (fenêtres, portes) : elles s'allument la nuit
+  }
+
+  /** Retient une ouverture si sa couleur est sombre. */
+  mark(pts, fill) {
+    if (typeof fill !== 'string' || fill[0] !== '#' || fill.length !== 7) return;
+    const [r, g, b] = hexToRgb(fill);
+    if (r * 0.299 + g * 0.587 + b * 0.114 <= 52) this.lit.push(pts);
   }
 
   P(x, y, z = 0) { return [x - y, (x + y) * 0.5 - z]; }
@@ -81,22 +89,30 @@ export class Iso {
   /** Rectangle sur une face y = constante (face gauche). */
   rectL(x0, x1, y, z0, z1, fill, stroke, lw) {
     const P = this.P;
-    this.poly([P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)], fill, stroke, lw);
+    const pts = [P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)];
+    this.poly(pts, fill, stroke, lw);
+    this.mark(pts, fill);
   }
   /** Rectangle sur une face x = constante (face droite). */
   rectR(x, y0, y1, z0, z1, fill, stroke, lw) {
     const P = this.P;
-    this.poly([P(x, y0, z0), P(x, y1, z0), P(x, y1, z1), P(x, y0, z1)], fill, stroke, lw);
+    const pts = [P(x, y0, z0), P(x, y1, z0), P(x, y1, z1), P(x, y0, z1)];
+    this.poly(pts, fill, stroke, lw);
+    this.mark(pts, fill);
   }
 
   /** Porte ou fenêtre cintrée sur une face gauche. */
   archL(x0, x1, y, z0, z1, fill, stroke) {
     const P = this.P, xm = (x0 + x1) / 2, zr = z1 - (x1 - x0) * 0.35;
-    this.poly([P(x0, y, z0), P(x1, y, z0), P(x1, y, zr), P(xm + (x1 - x0) * 0.28, y, z1 - 0.3), P(xm, y, z1), P(xm - (x1 - x0) * 0.28, y, z1 - 0.3), P(x0, y, zr)], fill, stroke);
+    const pts = [P(x0, y, z0), P(x1, y, z0), P(x1, y, zr), P(xm + (x1 - x0) * 0.28, y, z1 - 0.3), P(xm, y, z1), P(xm - (x1 - x0) * 0.28, y, z1 - 0.3), P(x0, y, zr)];
+    this.poly(pts, fill, stroke);
+    this.mark(pts, fill);
   }
   archR(x, y0, y1, z0, z1, fill, stroke) {
     const P = this.P, ym = (y0 + y1) / 2, zr = z1 - (y1 - y0) * 0.35;
-    this.poly([P(x, y0, z0), P(x, y1, z0), P(x, y1, zr), P(x, ym + (y1 - y0) * 0.28, z1 - 0.3), P(x, ym, z1), P(x, ym - (y1 - y0) * 0.28, z1 - 0.3), P(x, y0, zr)], fill, stroke);
+    const pts = [P(x, y0, z0), P(x, y1, z0), P(x, y1, zr), P(x, ym + (y1 - y0) * 0.28, z1 - 0.3), P(x, ym, z1), P(x, ym - (y1 - y0) * 0.28, z1 - 0.3), P(x, y0, zr)];
+    this.poly(pts, fill, stroke);
+    this.mark(pts, fill);
   }
 
   /** Colombages sur une face gauche / droite. */

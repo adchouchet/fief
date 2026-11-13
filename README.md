@@ -27,9 +27,24 @@ ones rise from their scaffolding.
 Villagers chop wood, farm, mine and build; sheep graze; fishing boats and
 merchant ships sail; dirt paths link the town hall to the gates and workshops.
 
+## A living world
+
+- **Evening falls.** Day and night follow your computer's clock. At dusk the
+  windows light up, villagers gather round the fire, then go home to sleep.
+- **Something is happening.** Now and then, one event at a time: a festival,
+  a merchant's cart, the lord's procession, a house on fire that the village
+  puts out and rebuilds, a whale offshore, a dragon's shadow.
+- **The weather turns.** Cloud shadows drift over the islands, gusts ripple
+  through the grass, and some mornings bring mist or a light rain.
+- **Small lives.** Hens, dogs and children roam the villages.
+
+All of it can be tuned or switched off, and costs next to nothing: the sky is
+made of layers the graphics card blends on its own, and each little figure is
+drawn once, then copied.
+
 ## Five more worlds on itch.io
 
-The medieval kingdom is free and stays free. Five more worlds come with the version sold on [itch.io](https://adchouchet.itch.io/fief) for $2.20: the same idea, a different world each time. You pick yours in Settings, under Theme.
+The medieval kingdom is free and stays free. Five more worlds come with the version sold on [itch.io](https://adchouchet.itch.io/fief) for $2.20: the same idea, a different world each time. You pick yours in Settings, under Theme. Each one also has its own events: a kraken and a ghost ship, a lantern festival, northern lights and longship raids, sandstorms, meteor showers.
 
 | Feudal Japan | Pirate isles | Northern fjords |
 | :---: | :---: | :---: |
@@ -66,6 +81,8 @@ Runtime, which ships with up-to-date Windows.
 - **Around the icons** — clear space, land size, coastline wobble.
 - **World** — world scale, forests, population, animals, ships, fog of war,
   player colour.
+- **Living world** — day and night (follow the computer's clock, or always
+  daylight), how often events and weather happen (never, rare, frequent).
 - **Application** — 15, 30 or 60 frames per second, start with Windows.
 
 The interface follows the Windows language (English or French). Settings are

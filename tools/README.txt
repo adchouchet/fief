@@ -5,6 +5,11 @@ Run Fief.exe. A medieval world appears behind your desktop icons:
 every group of icons founds a settlement (camp, hamlet, village,
 walled town, city). Move, add or delete an icon and the world reacts.
 
+The world also follows your day: evening falls on your computer's
+clock, windows light up, and now and then something happens (a
+festival, a caravan, a fire...). All of it can be tuned or switched
+off in Settings, under "Living world".
+
 Fief sits near the clock as a small blue shield. Right-click it for
 Settings, Screens, Pause, Start with Windows and Quit.
 

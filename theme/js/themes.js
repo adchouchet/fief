@@ -22,6 +22,15 @@
 //   score(type, monde, colonie, tuile, hasard)  note de placement (la plus basse gagne), ou undefined
 //   emitters(objet)                    points de fumée d'un bâtiment, ou undefined pour le comportement de base
 //   ambient(agents, dt)                effets d'ambiance appelés à chaque image
+//   sky {clouds, weather, night, dusk, dawn, gold, amount, light}   ciel (voir sky.js) : force des ombres de nuages,
+//                                      temps possibles (['mist', 'rain']), teintes du soir et de la nuit, part de la
+//                                      nuit (0 à 1), couleur des fenêtres éclairées ('r,v,b')
+//   lights(objet)                      lumières en plus d'un bâtiment la nuit : [[dx, dy, rayon, force], …]
+//   pets                               false pour n'avoir ni poules ni chiens
+//   keepEvents [identifiants]          événements de base gardés (voir events.js) ; absent = tous
+//   events [{id, weight, can, start}]  événements propres au thème
+//   flock {body, tip}, trader, cartCloth, beast {body, leg}, lord {cape, hat, hatStyle}, horse
+//                                      allure du vol d'oiseaux, du marchand et de son attelage, du seigneur et de sa monture
 
 import { buildSprites } from './sprites.js';
 

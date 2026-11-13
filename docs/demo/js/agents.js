@@ -1,9 +1,10 @@
 // Tout ce qui vit et bouge : villageois au travail, moutons, cerfs, bateaux,
-// oiseaux, fumée, ailes du moulin.
+// oiseaux, fumée, ailes du moulin. La nuit, on veille près du feu ou l'on dort.
 
 import { hash2 } from './util.js';
 import { TEAMS } from './config.js';
 import { T_LAND } from './world.js';
+import { Critter, pairKids } from './life.js';
 
 const R = Math.random;
 const TAU = Math.PI * 2;
@@ -14,14 +15,56 @@ const TOOL = { wood: 'axe', mine: 'pick', forage: 'hand', farm: 'hoe', build: 'h
 // longueur d'un déplacement écran mesurée dans le plan du sol
 const groundLen = (dx, dy) => Math.sqrt(dx * dx * 0.5 + dy * dy * 2);
 
+// Chaque pose (personnage, animal) n'est dessinée qu'une fois dans une petite image, puis recopiée :
+// une copie coûte bien moins cher que la quinzaine de tracés d'une silhouette.
+const POSES = new Map();
+let POSE_K = 1; // pixels réels par pixel logique, fixé par Agents
+
+/** Image de la pose `key` ; paint(g) la dessine autour de l'origine, dans une boîte de demi-largeur hw, de `top` au-dessus à `bottom` en dessous. */
+function pose(key, hw, top, bottom, paint) {
+  let p = POSES.get(key);
+  if (!p) {
+    if (POSES.size > 4000) POSES.clear();
+    const K = POSE_K, ax = Math.round(hw * K), ay = Math.round(top * K), w = ax * 2, h = ay + Math.ceil(bottom * K);
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    const g = cv.getContext('2d');
+    g.setTransform(K, 0, 0, K, ax, ay);
+    paint(g);
+    p = { cv, ax, ay, lw: w / K, lh: h / K };
+    POSES.set(key, p);
+  }
+  return p;
+}
+
+/** Recopie une pose à l'écran, calée sur la grille de pixels réels. */
+function stamp(c, p, x, y, alpha = 1) {
+  const K = POSE_K;
+  if (alpha < 1) c.globalAlpha = Math.max(0, alpha);
+  c.drawImage(p.cv, Math.round(x * K - p.ax) / K, Math.round(y * K - p.ay) / K, p.lw, p.lh);
+  if (alpha < 1) c.globalAlpha = 1;
+}
+
+/** Un personnage : la marche et le geste de travail sont découpés en huit poses. */
 function drawPerson(c, x, y, t, o) {
+  let mode = 's', fr = 0, tt = 0;
+  if (o.moving) { const rate = o.fast ? 16 : 10; fr = ((((t * rate) / TAU) % 1) * 8) | 0; mode = 'm'; tt = (((fr + 0.5) / 8) * TAU) / rate; }
+  else if (o.work) { fr = ((((t * 7) / TAU) % 1) * 8) | 0; mode = 'w'; tt = (((fr + 0.5) / 8) * TAU) / 7; }
+  const key = (o.flip ? 'L' : 'R') + mode + fr + '|' + o.tunic + '|' + o.hat + '|' + (o.hatStyle || '') + '|' + (o.brim ? 1 : 0) + '|' + (o.stripe || '') + '|'
+    + (o.carry || '') + '|' + (o.work ? o.tool : '') + '|' + (o.scale || 1) + (o.fast ? 'f' : '');
+  const p = pose(key, 11, 18, 3, (g) => paintPerson(g, 0, 0, tt, { flip: o.flip, moving: o.moving, fast: o.fast, tunic: o.tunic, hat: o.hat, hatStyle: o.hatStyle, brim: o.brim, stripe: o.stripe, carry: o.carry, work: o.work, tool: o.tool, scale: o.scale, alpha: 1 }));
+  stamp(c, p, x, y, o.alpha === undefined ? 1 : o.alpha);
+}
+
+function paintPerson(c, x, y, t, o) {
   c.save();
   c.translate(Math.round(x), Math.round(y));
+  if (o.scale) c.scale(o.scale, o.scale);
   if (o.alpha < 1) c.globalAlpha = Math.max(0, o.alpha);
   c.fillStyle = 'rgba(0,0,0,.22)';
   c.beginPath(); c.ellipse(0.5, 0.4, 3.8, 1.5, 0, 0, TAU); c.fill();
   if (o.flip) c.scale(-1, 1);
-  const sw = o.moving ? Math.sin(t * 10) : 0;
+  const sw = o.moving ? Math.sin(t * (o.fast ? 16 : 10)) : 0;
   c.fillStyle = '#3d2c1c';
   c.fillRect(-1.7 + sw * 0.9, -3.4, 1.4, 3.6);
   c.fillRect(0.4 - sw * 0.9, -3.4, 1.4, 3.6);
@@ -69,6 +112,7 @@ function drawPerson(c, x, y, t, o) {
   }
   if (o.carry === 'wood') { c.fillStyle = '#6f4a28'; c.fillRect(-4.2, -13.5, 8.8, 2.3); c.fillStyle = '#dcbf8f'; c.fillRect(3.8, -13.5, 0.9, 2.3); }
   else if (o.carry === 'food') { c.fillStyle = '#d8c079'; c.beginPath(); c.arc(-2.7, -8.3, 2.4, 0, TAU); c.fill(); }
+  else if (o.carry === 'water') { c.fillStyle = '#6b4a28'; c.fillRect(-4.8, -8.6, 3.2, 3.1); c.fillStyle = '#7cc0ea'; c.fillRect(-4.5, -8.6, 2.6, 0.9); }
   else if (o.carry) { c.fillStyle = o.carry === 'gold' ? '#e2b632' : '#9d9c94'; c.beginPath(); c.arc(-2.7, -7.9, 2.1, 0, TAU); c.fill(); }
   c.restore();
 }
@@ -86,6 +130,7 @@ class Villager {
     this.path = null; this.pi = 0; this.next = null; this.target = null; this.site = null;
     this.carry = null; this.work = false; this.moving = false; this.flip = R() < 0.5; this.fails = 0;
     this.farm = null; this.cycles = 0;
+    this.duty = null; this.asleep = false; this.hop = false; this.fire = null; this.watch = false;
     const hats = A.theme.hats || ['#5a3a1e', '#2e2a26', '#8a5a2a', '#6b4a28', '#a8322a'];
     this.hat = hats[(R() * hats.length) | 0];
   }
@@ -127,6 +172,9 @@ class Villager {
   think() {
     const A = this.A, w = A.w, C = w.clusters[this.c];
     if (!C) { this.dying = true; return; }
+    // une tâche confiée par un événement (chaîne de seaux, danse…) passe avant tout
+    if (this.duty) { if (this.duty(this, C) !== false) return; this.duty = null; this.hop = false; }
+    if (A.night > 0.45 && this.job !== 'build') { this.nightThink(C); return; }
     if (this.fails > 3) { this.fails = 0; this.job = this.base = 'idle'; }
     this.work = false; this.target = null;
     let job = this.job;
@@ -156,6 +204,21 @@ class Villager {
     this.state = 'wait'; this.wt = 2 + R() * 3;
   }
 
+  /** La nuit : un villageois sur quatre veille près du feu, les autres rentrent dormir. */
+  nightThink(C) {
+    const A = this.A, w = A.w, g = w.grid;
+    this.work = false; this.target = null; this.carry = null;
+    if (this.watch) {
+      const f = (this.fire = A.fires.find((q) => q.c === C.id) || null);
+      if (f) for (let n = 0; n < 6; n++) { const k = g.nb(f.tile, (R() * 8) | 0); if (k >= 0 && w.walk[k] && this.goTo(k, 'sit')) return; }
+      this.state = 'wait'; this.wt = 6 + R() * 10;
+      return;
+    }
+    const homes = ((C.b.house && C.b.house.length ? C.b.house : C.b.tent) || C.b.tc || []).filter((o) => o.state === 'idle');
+    if (homes.length) { const k = this.nearestAccess(homes[this.n % homes.length]); if (k >= 0 && this.goTo(k, 'sleep')) return; }
+    this.state = 'sleep';
+  }
+
   arrive() {
     this.path = null;
     const next = this.next, tg = this.target;
@@ -165,6 +228,7 @@ class Villager {
       if (tg && tg.state === 'build') { this.state = 'build'; this.work = true; this.tool = 'hammer'; this.site = tg; tg.builders++; }
       else this.state = 'think';
     } else if (next === 'drop') { this.state = 'drop'; this.wt = 0.6; }
+    else if (next === 'sit') { this.state = 'sit'; this.wt = 20 + R() * 40; if (this.fire) this.flip = this.fire.x < this.x; }
     else this.state = next || 'think';
   }
 
@@ -207,9 +271,12 @@ class Villager {
     this.t += dt;
     if (this.dying) { this.alpha -= dt * 1.5; if (this.alpha <= 0) { this.dead = true; this.leaveSite(); } return; }
     if (this.hidden) { this.wt -= dt; if (this.wt <= 0) { this.hidden = false; this.state = 'think'; } return; }
-    if (this.alpha < 1) this.alpha = Math.min(1, this.alpha + dt * 1.5);
+    if (this.asleep) this.alpha = Math.max(0, this.alpha - dt * 1.2);
+    else if (this.alpha < 1) this.alpha = Math.min(1, this.alpha + dt * 1.5);
     this.moving = false;
     switch (this.state) {
+      case 'sit': this.wt -= dt; if (this.wt <= 0 || this.A.night < 0.3 || this.duty) this.state = 'think'; break;
+      case 'sleep': this.asleep = true; if (this.A.night < 0.3 || this.duty) { this.asleep = false; this.state = 'wait'; this.wt = this.duty ? 0 : (this.n % 9) * 1.5; } break;
       case 'walk': this.moving = true; if (this.path && this.step(dt)) this.arrive(); else if (!this.path && this.state === 'walk') this.state = 'think'; break;
       case 'work': this.wt -= dt; if (this.wt <= 0) this.finishWork(); break;
       case 'build': if (!this.site || this.site.state !== 'build') { this.site = null; this.work = false; this.state = 'think'; } break;
@@ -227,7 +294,7 @@ class Villager {
     this.brim = this.job === 'farm';
     this.hatStyle = Array.isArray(th.hat) ? th.hat[this.n % th.hat.length] : th.hat;
     this.stripe = th.stripe && this.n % 2 === 0 && this.job !== 'build' ? th.stripe : null;
-    drawPerson(c, this.x, this.y, this.t, this);
+    drawPerson(c, this.x, this.y - (this.hop && !this.moving ? Math.abs(Math.sin(this.t * 7)) * 2 : 0), this.t, this);
   }
 }
 
@@ -275,10 +342,11 @@ class Grazer {
   }
   draw(c) {
     const eat = this.state === 'graze' && Math.sin(this.t * 0.6 + this.x) > -0.3;
-    c.save();
-    c.translate(Math.round(this.x), Math.round(this.y));
-    if (this.alpha < 1) c.globalAlpha = Math.max(0, this.alpha);
-    const sw = this.moving ? Math.sin(this.t * 9) * 0.8 : 0;
+    const f4 = this.moving ? ((((this.t * 9) / TAU) % 1) * 4) | 0 : -1, sw = this.moving ? Math.sin(((f4 + 0.5) / 4) * TAU) * 0.8 : 0;
+    const key = this.kind + (this.A.theme.id || '') + (this.flip ? 'L' : 'R') + f4 + (eat ? 'e' : '') + (this.kind === 'deer' && this.key % 2 === 0 ? 'a' : '');
+    stamp(c, pose(key, 9, 16, 3, (g) => this.paint(g, eat, sw)), this.x, this.y, this.alpha);
+  }
+  paint(c, eat, sw) {
     const th = this.A.theme;
     if (this.kind === 'sheep') {
       const k = th.herdLook || {};
@@ -302,7 +370,6 @@ class Grazer {
       c.fillStyle = '#9a6936'; c.beginPath(); c.ellipse(hx, hy, 1.7, 1.3, 0, 0, TAU); c.fill();
       if (this.key % 2 === 0) { c.strokeStyle = '#5a4020'; c.lineWidth = 0.7; c.beginPath(); c.moveTo(hx - 0.4, hy - 1); c.lineTo(hx - 1.4, hy - 4); c.moveTo(hx - 1, hy - 2.6); c.lineTo(hx + 0.6, hy - 4.2); c.stroke(); }
     }
-    c.restore();
   }
 }
 
@@ -349,6 +416,7 @@ class Boat {
 
   choose() {
     const A = this.A, w = A.w, g = w.grid;
+    if (this.event) { this.wt = 5; return; } // navire mené par un événement
     if (this.kind === 'roam') {
       for (let n = 0; n < 6; n++) { const k = A.openSea(); if (k >= 0 && k !== this.tile && this.sailTo(k)) { this.then = 'docked'; return; } }
       this.wt = 3 + R() * 4;
@@ -409,7 +477,7 @@ class Boat {
   draw(c) {
     // un thème peut dessiner tout autre chose qu'un bateau (caravane, vaisseau…)
     if (this.A.theme.drawBoat) { this.A.theme.drawBoat(c, this); return; }
-    const sail = this.A.theme.sail || {};
+    const sail = this.sail || this.A.theme.sail || {};
     const trade = this.kind !== 'fish';
     const L = trade ? 11.5 : 7.5, Wd = trade ? 4.3 : 3, H = trade ? 3 : 2.2;
     const cs = Math.cos(this.th), sn = Math.sin(this.th);
@@ -423,7 +491,7 @@ class Boat {
       if (stroke) { c.strokeStyle = stroke; c.lineWidth = 0.7; c.stroke(); }
     };
     c.save();
-    if (this.alpha < 1) c.globalAlpha = Math.max(0, this.alpha);
+    if (this.alpha < 1 || this.fade) c.globalAlpha = Math.max(0, this.alpha) * (this.fade || 1);
     // reflet sombre et sillage
     poly(out.map(([u, v]) => { const p = P(u * 1.1, v * 1.25, 0); return [p[0] + 2, p[1] + 1.5]; }), 'rgba(8,40,62,.3)');
     if (this.state === 'sail') {
@@ -464,8 +532,14 @@ function popTarget(C, S) {
 }
 
 export class Agents {
-  constructor(world, S) {
-    this.w = world; this.S = S;
+  constructor(world, S, sky = null) {
+    this.w = world; this.S = S; this.sky = sky; this.events = null;
+    // les poses gardées en mémoire valent pour une échelle d'affichage donnée
+    const any = world.sp && world.sp.trees && world.sp.trees[0], k = any && any.s ? any.s.k : 1;
+    if (k !== POSE_K) { POSE_K = k; POSES.clear(); }
+    this.night = sky ? sky.night : 0;
+    this.critters = []; this.extra = [];   // petite vie ; éléments ajoutés par un événement
+    this.fires = []; this.fireKey = ''; this.firesOn = null; // feux de veillée
     this.theme = world.theme || {};
     this.team = TEAMS[S.team] || TEAMS.bleu;
     this.vill = []; this.grazers = []; this.boats = []; this.over = []; this.emit = [];
@@ -525,13 +599,80 @@ export class Agents {
         const j = jobs[i];
         v.base = j ? j[0] : 'idle'; v.farm = j && j[1] ? j[1] : null;
         v.job = i >= vs.length - nBuild ? 'build' : v.base;
+        v.watch = i % 4 === 0; // la nuit, un villageois sur quatre veille : il y en a donc toujours un par colonie
       });
     }
 
     this.reconcileGrazers(instant);
+    this.reconcileCritters(instant);
     this.reconcileBoats();
-    this.refreshOverlays();
+    this.firesOn = null;
+    this.updateFires();
     this.setupBirds();
+  }
+
+  /** Poules, chiens et enfants : quelques-uns par colonie, à partir du hameau. */
+  reconcileCritters(instant) {
+    const w = this.w, g = w.grid, S = this.S, pets = this.theme.pets !== false;
+    const count = new Map();
+    for (const a of this.critters) {
+      if (a.dying) continue;
+      const k = g.tileAt(a.x, a.y), c = k >= 0 && w.walk[k] ? w.cl[k] : -1;
+      if (c < 0 || (!pets && a.kind !== 'kid')) { a.dying = true; continue; }
+      a.c = c; a.tile = k; a.rehome();
+      count.set(a.kind + c, (count.get(a.kind + c) || 0) + 1);
+    }
+    for (const C of w.clusters) {
+      if (C.tier < 1) { for (const a of this.critters) if (a.c === C.id) a.dying = true; continue; }
+      const want = {
+        hen: pets ? Math.round((1 + C.tier) * Math.min(1.5, S.wildlife)) : 0,
+        dog: pets && S.wildlife > 0 ? (C.tier >= 3 ? 2 : 1) : 0,
+        kid: C.tier >= 2 ? Math.round((C.tier >= 4 ? 4 : 2) * Math.min(1, S.pop)) : 0,
+      };
+      for (const kind in want) {
+        let have = count.get(kind + C.id) || 0;
+        for (const a of this.critters) if (have > want[kind] && a.kind === kind && a.c === C.id && !a.dying) { a.dying = true; have--; }
+        for (; have < want[kind]; have++) { const a = Critter.spawn(this, kind, C); if (!a) break; if (instant) a.alpha = 1; this.critters.push(a); }
+      }
+    }
+    pairKids(this.critters);
+  }
+
+  /** Tuile libre devant le forum : la place du village, où l'on veille et où l'on danse. -1 s'il n'y en a pas. */
+  squareOf(C) {
+    if (C._sq !== undefined) return C._sq;
+    const w = this.w, g = w.grid;
+    const hub = (C.b.tc && C.b.tc[0]) || (C.b.castle && C.b.castle[0]) || (C.b.tent && C.b.tent[0]);
+    const door = hub ? w.doorTile(hub) : -1;
+    let best = -1, bs = 1e9;
+    if (door >= 0) for (const k of C.townTiles) {
+      if (!w.walk[k] || w.flat[k] || w.road[k]) continue;
+      let free = 0;
+      for (let q = 0; q < 8; q++) { const n = g.nb(k, q); if (n >= 0 && w.walk[n] && !w.flat[n]) free++; }
+      if (free < 7) continue;
+      const s = Math.abs(Math.hypot(g.cx[k] - g.cx[door], (g.cy[k] - g.cy[door]) * 2) - 36) + hash2(k, 3, 7) * 6;
+      if (s < bs) { bs = s; best = k; }
+    }
+    return (C._sq = best);
+  }
+
+  /** Allume ou éteint les feux de veillée selon l'heure. */
+  updateFires() {
+    const w = this.w, g = w.grid, want = this.night > 0.3;
+    if (want === this.firesOn) return;
+    for (const f of this.fires) if (!f.building && f.epoch === w.epoch) w.cost[f.tile] -= 6;
+    this.firesOn = want; this.fires = [];
+    if (want) for (const C of w.clusters) {
+      const camp = C.b.campfire && C.b.campfire.find((o) => o.state === 'idle');
+      if (camp) { this.fires.push({ x: camp.x, y: camp.y, tile: camp.tiles[0], c: C.id, building: true }); continue; }
+      const k = C.tier >= 1 ? this.squareOf(C) : -1;
+      if (k < 0) continue;
+      w.cost[k] += 6; // on contourne le feu
+      this.fires.push({ id: 900000 + C.id, x: g.cx[k], y: g.cy[k], baseY: g.cy[k], tile: k, c: C.id, epoch: w.epoch });
+    }
+    this.fireKey = this.fires.map((f) => f.tile).join();
+    this.refreshOverlays();
+    if (this.sky) this.sky.dirty = true;
   }
 
   reconcileGrazers(instant) {
@@ -632,6 +773,7 @@ export class Agents {
       else if (o.type === 'smith') this.emit.push({ x: o.x + 14, y: o.y - 26, rate: 2.2, acc: R() });
       else if (o.type === 'house' && o.variant >= 1 && o.id % 2 === 0) this.emit.push(o.variant % 2 ? { x: o.x + 2.6, y: o.y - 22, rate: 0.8, acc: R() } : { x: o.x + 5.5, y: o.y - 18.5, rate: 0.8, acc: R() });
     }
+    for (const f of this.fires) if (!f.building) { this.over.push(makeFire(f, 1.35, true)); this.emit.push({ x: f.x, y: f.y - 9, rate: 1.3, acc: R() }); }
   }
 
   setupBirds() {
@@ -660,6 +802,7 @@ export class Agents {
 
   update(dt, now) {
     const w = this.w;
+    this.night = this.sky ? this.sky.night : 0;
     let dead = false;
     for (const v of this.vill) { v.update(dt); if (v.dead) dead = true; }
     if (dead) this.vill = this.vill.filter((v) => !v.dead);
@@ -669,9 +812,12 @@ export class Agents {
     dead = false;
     for (const b of this.boats) { b.update(dt); if (b.dead) dead = true; }
     if (dead) this.boats = this.boats.filter((b) => !b.dead);
+    dead = false;
+    for (const a of this.critters) { a.update(dt); if (a.dead) dead = true; }
+    if (dead) { this.critters = this.critters.filter((a) => !a.dead); pairKids(this.critters); }
 
     this.tick -= dt;
-    if (this.tick <= 0) { this.tick = 2; this.ensureBoats(); }
+    if (this.tick <= 0) { this.tick = 2; this.ensureBoats(); this.updateFires(); }
 
     // fumée
     if (this.parts.length < 400) {
@@ -728,10 +874,12 @@ export class Agents {
   drawables() {
     const d = this.draws;
     d.length = 0;
-    for (const v of this.vill) if (!v.hidden) d.push(v);
+    for (const v of this.vill) if (!v.hidden && !(v.asleep && v.alpha <= 0)) d.push(v);
     for (const a of this.grazers) d.push(a);
+    for (const a of this.critters) if (a.alpha > 0) d.push(a);
     for (const b of this.boats) d.push(b);
     for (const o of this.over) d.push(o);
+    for (const o of this.extra) d.push(o);
     return d;
   }
 
@@ -770,6 +918,8 @@ export class Agents {
       c.fillStyle = body; c.beginPath(); c.ellipse(0.4, 0, 2.6, 1.1, 0, 0, TAU); c.fill();
       c.restore();
     }
+    if (this.events) this.events.drawTop(c, now);
+    if (this.sky) this.sky.drawRain(c, now);
   }
 }
 
@@ -792,14 +942,20 @@ function makeSails(o) {
   };
 }
 
-function makeFire(o) {
+function makeFire(o, s = 1, logs = false) {
   return {
-    x: o.x, y: o.y, baseY: o.baseY + 0.5, hw: 6, hh: 12,
+    x: o.x, y: o.y, baseY: o.baseY + 0.5, hw: 6 * s, hh: 12 * s,
     draw(c, now) {
       const f = Math.sin(now * 11 + o.id) * 0.5 + Math.sin(now * 17.3) * 0.5;
+      if (s !== 1) { c.save(); c.translate(o.x, o.y); c.scale(s, s); c.translate(-o.x, -o.y); }
+      if (logs) { c.strokeStyle = '#4a2f18'; c.lineWidth = 1.5; c.lineCap = 'round'; c.beginPath(); c.moveTo(o.x - 3.4, o.y + 0.6); c.lineTo(o.x + 3.4, o.y - 0.8); c.moveTo(o.x - 3, o.y - 1); c.lineTo(o.x + 3, o.y + 0.8); c.stroke(); }
       c.fillStyle = 'rgba(255,170,60,.16)'; c.beginPath(); c.ellipse(o.x, o.y - 1, 11 + f, 5.5 + f * 0.5, 0, 0, TAU); c.fill();
       c.fillStyle = '#f2792b'; c.beginPath(); c.moveTo(o.x - 2.6, o.y - 0.5); c.quadraticCurveTo(o.x - 2.4 + f, o.y - 5, o.x + f * 0.8, o.y - 8.5 - f); c.quadraticCurveTo(o.x + 2.6, o.y - 4, o.x + 2.6, o.y - 0.5); c.fill();
       c.fillStyle = '#ffd24a'; c.beginPath(); c.moveTo(o.x - 1.3, o.y - 0.6); c.quadraticCurveTo(o.x - 0.8, o.y - 3, o.x - f * 0.5, o.y - 5.2); c.quadraticCurveTo(o.x + 1.4, o.y - 2.4, o.x + 1.3, o.y - 0.6); c.fill();
+      if (s !== 1) c.restore();
     },
   };
 }
+
+// outils partagés avec la petite vie et les événements
+export { drawPerson, groundLen, makeFire, Boat, angDiff, pose, stamp };

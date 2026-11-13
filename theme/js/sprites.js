@@ -51,13 +51,14 @@ class Baker {
   }
   /** Dessin isométrique + ombre portée calculée. */
   iso(ext, fn) {
-    let hull = null;
-    const s = this.bake(ext, (g) => { const I = new Iso(g); fn(I, g); hull = I.shadowHull(); });
+    let hull = null, lit = null;
+    const s = this.bake(ext, (g) => { const I = new Iso(g); fn(I, g); hull = I.shadowHull(); if (I.lit.length) lit = I.lit; });
     let sh = null;
     if (hull && hull.length >= 3) {
       sh = this.bake(ext, (g) => { g.beginPath(); hull.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fillStyle = '#000'; g.fill(); });
     }
-    return { s, sh };
+    // lit : fenêtres et portes de l'élément, en pixels logiques autour du point d'ancrage (voir sky.js)
+    return { s, sh, lit };
   }
 }
 

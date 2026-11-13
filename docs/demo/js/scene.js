@@ -28,6 +28,7 @@ export class Scene {
     this.occ = [];
     this.frame = 0;
     this.lastFlush = 0;
+    this.version = 0; // change à chaque ajout ou retrait d'un élément fixe
   }
 
   /** W, H : taille logique ; bw, bh : taille réelle des calques ; k : px réels par px logique. */
@@ -62,13 +63,13 @@ export class Scene {
 
   insert(o) {
     if (o._in) return;
-    o._in = true; o._bb = null;
+    o._in = true; o._bb = null; this.version++;
     this.eachCell(this.bbox(o), (id) => { let a = this.cells.get(id); if (!a) this.cells.set(id, (a = [])); a.push(o); });
   }
 
   erase(o) {
     if (!o._in) return;
-    o._in = false;
+    o._in = false; this.version++;
     this.eachCell(this.bbox(o), (id) => { const a = this.cells.get(id); if (a) { const i = a.indexOf(o); if (i >= 0) { a[i] = a[a.length - 1]; a.pop(); } } });
   }
 
@@ -228,6 +229,51 @@ export class Scene {
     c.restore();
   }
 
+  /**
+   * Comme occlude, pour un mobile : chercher les éléments fixes qui peuvent passer devant lui est ce qui coûte
+   * le plus, alors on garde la liste tant qu'il n'a pas bougé de quelques pixels et que le décor n'a pas changé.
+   */
+  occludeAgent(c, it) {
+    const qx = Math.round(it.x / 4), qy = Math.round(it.y / 4);
+    let list = it._occ;
+    if (!list || it._ov !== this.version || it._oqx !== qx || it._oqy !== qy) {
+      it._ov = this.version; it._oqx = qx; it._oqy = qy;
+      list = it._occ || (it._occ = []);
+      list.length = 0;
+      // boîte élargie : ce qui y entre reste valable pour tout le voisinage
+      const m = 5, x0 = it.x - it.hw - m, y0 = it.y - it.hh - m, x1 = it.x + it.hw + m, y1 = it.y + 3 + m, by = it.baseY - m;
+      const fid = ++this.frame;
+      const cx0 = Math.max(0, Math.floor(x0 / CELL)), cx1 = Math.floor(x1 / CELL);
+      const cy0 = Math.max(0, Math.floor(y0 / CELL)), cy1 = Math.floor(y1 / CELL);
+      for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) {
+        const a = this.cells.get(cy * this.ccols + cx);
+        if (!a) continue;
+        for (let i = 0; i < a.length; i++) {
+          const o = a[i];
+          if (o.baseY <= by || o._f === fid || (o.flat && !o.upright)) continue;
+          o._f = fid;
+          const s = o.e.s, sx = o.x - s.lax, sy = o.y - s.lay;
+          if (sx > x1 || sx + s.lw < x0 || sy > y1 || sy + s.lh < y0) continue;
+          list.push(o);
+        }
+      }
+      if (list.length > 1) list.sort((p, q) => p.baseY - q.baseY || p.id - q.id);
+    }
+    if (!list.length) return;
+    const K = this.K, baseY = it.baseY;
+    const x0 = Math.floor((it.x - it.hw) * K) / K, y0 = Math.floor((it.y - it.hh) * K) / K, x1 = Math.ceil((it.x + it.hw) * K) / K, y1 = Math.ceil((it.y + 3) * K) / K;
+    let open = false;
+    for (let i = 0; i < list.length; i++) {
+      const o = list[i];
+      if (o.baseY <= baseY) continue;
+      const s = o.e.s, sx = o.x - s.lax, sy = o.y - s.lay;
+      if (sx > x1 || sx + s.lw < x0 || sy > y1 || sy + s.lh < y0) continue;
+      if (!open) { open = true; c.save(); c.beginPath(); c.rect(x0, y0, x1 - x0, y1 - y0); c.clip(); }
+      drawSprite(c, s, o.x, o.y);
+    }
+    if (open) c.restore();
+  }
+
   draw(now, agents) {
     const c = this.dctx, list = this.list, K = this.K;
     c.setTransform(1, 0, 0, 1, 0, 0);
@@ -242,7 +288,7 @@ export class Scene {
       const it = list[i];
       if (it.draw) {
         it.draw(c, now);
-        if (!it.noOcc) this.occlude(c, it.x - it.hw, it.y - it.hh, it.x + it.hw, it.y + 3, it.baseY);
+        if (!it.noOcc) this.occludeAgent(c, it);
       } else {
         this.drawTransient(c, it, now);
         const s = it.e.s;

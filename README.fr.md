@@ -28,9 +28,26 @@ Les villageois coupent du bois, cultivent, minent et bâtissent ; les moutons
 broutent ; barques de pêche et navires marchands prennent la mer ; des chemins
 de terre relient le forum aux portes et aux ateliers.
 
+## Un monde qui vit
+
+- **Le soir tombe.** Le jour et la nuit suivent l'heure de l'ordinateur. Au
+  crépuscule les fenêtres s'allument, on veille autour du feu, puis chacun
+  rentre dormir.
+- **Il se passe quelque chose.** De temps en temps, un seul événement à la
+  fois : un jour de fête, la charrette d'un marchand, le cortège du seigneur,
+  une maison en feu que le village éteint puis rebâtit, une baleine au large,
+  l'ombre d'un dragon.
+- **Le temps change.** L'ombre des nuages glisse sur les îles, le vent couche
+  l'herbe par rafales, et certains matins amènent la brume ou une pluie fine.
+- **Petite vie.** Poules, chiens et enfants animent les villages.
+
+Tout cela se règle ou se coupe, et ne coûte presque rien : le ciel est fait de
+calques que la carte graphique mélange seule, et chaque silhouette n'est
+dessinée qu'une fois avant d'être recopiée.
+
 ## Cinq autres mondes sur itch.io
 
-Le royaume médiéval est gratuit et le restera. Cinq autres mondes sont fournis avec la version vendue sur [itch.io](https://adchouchet.itch.io/fief) pour 2,20 $, environ 2 € : le même principe, un monde différent à chaque fois. Vous choisissez le vôtre dans les Réglages, rubrique Thème.
+Le royaume médiéval est gratuit et le restera. Cinq autres mondes sont fournis avec la version vendue sur [itch.io](https://adchouchet.itch.io/fief) pour 2,20 $, environ 2 € : le même principe, un monde différent à chaque fois. Vous choisissez le vôtre dans les Réglages, rubrique Thème. Chacun a aussi ses propres événements : kraken et vaisseau fantôme, fête des lanternes, aurores boréales et raids de drakkars, tempêtes de sable, pluies de météores.
 
 | Japon féodal | Îles aux pirates | Fjords du Nord |
 | :---: | :---: | :---: |
@@ -69,6 +86,9 @@ WebView2 Runtime, présent sur les Windows à jour.
 - **Autour des icônes** — espace dégagé, taille des terres, sinuosité des côtes.
 - **Monde** — taille du monde, forêts, population, animaux, navires, brouillard
   de guerre, couleur du joueur.
+- **Vie du monde** — jour et nuit (suit l'heure de l'ordinateur, ou toujours
+  plein jour), fréquence des événements et de la météo (jamais, rares,
+  fréquents).
 - **Application** — 15, 30 ou 60 images par seconde, démarrage avec Windows.
 
 L'interface suit la langue de Windows (français ou anglais). Les réglages sont

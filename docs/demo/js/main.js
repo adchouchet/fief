@@ -19,6 +19,8 @@ import { buildSprites } from './sprites.js';
 import { Demo } from './demo.js';
 import { t } from './i18n.js';
 import { MEDIEVAL, loadTheme } from './themes.js';
+import { Sky } from './sky.js';
+import { Events } from './events.js';
 
 const query = new URLSearchParams(location.search);
 const hosted = query.has('host') && !!(window.chrome && window.chrome.webview);
@@ -37,11 +39,12 @@ const staticCanvas = document.getElementById('static');
 const dynCanvas = document.getElementById('dynamic');
 const fogCanvas = document.getElementById('fog');
 const fogCtx = fogCanvas.getContext('2d');
+const sky = new Sky(document.getElementById('sky'), document.getElementById('veil'), document.getElementById('lights'), S, query);
 
 let theme = MEDIEVAL;   // thème en cours (voir themes.js)
 let W = 0, H = 0;       // taille logique du monde
 let Z = 1, K = 1;
-let sprites = null, grid = null, world = null, scene = null, agents = null;
+let sprites = null, grid = null, world = null, scene = null, agents = null, events = null;
 let rawRects = [];      // rectangles d'icônes reçus, en pixels CSS de la fenêtre
 let iconRects = [];     // les mêmes, en pixels logiques
 let paused = false;
@@ -49,7 +52,8 @@ let gotIcons = false;
 let demo = null;
 let fogImg = null;
 
-const clock = () => performance.now() / 1000;
+let warp = 0; // secondes sautées par l'avance rapide (mise au point)
+const clock = () => performance.now() / 1000 + warp;
 
 /** Reconstruit tout ce qui dépend de la taille d'écran, de l'échelle, de la graine, de la couleur ou du thème. */
 function rebuild() {
@@ -65,6 +69,8 @@ function rebuild() {
 
   ground.resize(bw, bh, K);
   ground.setPalette(theme.ground);
+  sky.resize(W, H, Z, bw, bh, K);
+  sky.setTheme(theme);
   field.resize(W, H, S.seed);
   fogCanvas.width = field.gw; fogCanvas.height = field.gh;
   fogCanvas.style.width = field.gw * CS * Z + 'px'; fogCanvas.style.height = field.gh * CS * Z + 'px';
@@ -77,8 +83,11 @@ function rebuild() {
   world = new World(grid, field, sprites, S, theme);
   scene = new Scene(staticCanvas, dynCanvas, sprites);
   scene.resize(W, H, bw, bh, K);
-  agents = new Agents(world, S);
-  world.onBuilt = (o) => agents.onBuilt(o);
+  if (events) events.stop();
+  agents = new Agents(world, S, sky);
+  events = new Events({ world, agents, scene, sky, S, theme, relayout: () => agents.reconcile(false) }, query.get('event'));
+  agents.events = events;
+  world.onBuilt = (o) => { agents.onBuilt(o); sky.dirty = true; };
   relayout(true);
 }
 
@@ -90,6 +99,8 @@ function relayout(instant) {
   if (instant) field.snap = true;
   scene.sync(world, now);
   agents.reconcile(instant);
+  if (events) events.onLayout();
+  sky.dirty = true;
 }
 
 function drawFog() {
@@ -104,12 +115,16 @@ function drawFog() {
 
 function renderFrame(dt, now) {
   world.update(dt, now);
+  sky.update(dt, world, agents);
   agents.update(dt, now);
+  events.update(dt, now);
   scene.update(now);
   if (field.step(dt)) { ground.upload(field); drawFog(); }
+  ground.wind = sky.gwind;
   ground.draw(now);
   scene.draw(now, agents.drawables());
   agents.drawTop(scene.dctx, now);
+  sky.flush();
   if (hud) {
     // contrôle : contour des rectangles d'icônes reçus
     const c = scene.dctx;
@@ -123,7 +138,7 @@ const stats = { ms: 0, n: 0, t: performance.now(), avg: 0, fps: 0 };
 let hud = null;
 if (query.has('debug')) {
   hud = document.createElement('div');
-  hud.style.cssText = 'position:fixed;right:8px;top:8px;font:12px Consolas,monospace;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:4px;z-index:9';
+  hud.style.cssText = 'position:fixed;left:8px;top:8px;font:12px Consolas,monospace;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:4px;z-index:9';
   document.body.appendChild(hud);
 }
 
@@ -137,12 +152,32 @@ function frame(nowMs) {
   const dt = Math.min(0.1, acc);
   acc = 0;
   const t0 = performance.now();
-  renderFrame(dt, nowMs / 1000);
+  renderFrame(dt, nowMs / 1000 + warp);
   stats.ms += performance.now() - t0; stats.n++;
   if (stats.n >= 30) {
     stats.avg = stats.ms / stats.n; stats.fps = (stats.n * 1000) / (nowMs - stats.t); stats.ms = 0; stats.n = 0; stats.t = nowMs;
-    if (hud) hud.textContent = t('hud.stats', stats.fps.toFixed(0), stats.avg.toFixed(1), agents.vill.length, world.nature.size) + ` · ×${K.toFixed(2)}`;
+    if (hud) hud.textContent = t('hud.stats', stats.fps.toFixed(0), stats.avg.toFixed(1), agents.vill.length, world.nature.size) + ` · ×${K.toFixed(2)}` + eventNote();
   }
+}
+
+/** Pour la mise au point : nom et position de l'événement en cours. */
+function eventNote() {
+  if (!events || !events.cur) return '';
+  const m = agents.extra[0] || agents.vill.find((v) => v.duty), p = events.cur.at ? events.cur.at() : m ? [m.x, m.y] : null;
+  return ' · ' + events.curId + (p ? ` @ ${Math.round(p[0])},${Math.round(p[1])}` : '');
+}
+
+/** Pour la mise au point : fait vivre le monde `sec` secondes d'un coup, sans rien afficher entre-temps. */
+function advance(sec) {
+  const dt = 1 / 30;
+  for (let i = 0, n = Math.round(sec * 30); i < n; i++) {
+    warp += dt;
+    const now = clock();
+    world.update(dt, now); sky.update(dt, world, agents); agents.update(dt, now); events.update(dt, now); scene.update(now);
+    field.step(dt); sky.dyn.length = 0;
+  }
+  ground.upload(field); drawFog();
+  if (hud) hud.textContent = sec + ' s' + eventNote();
 }
 
 const REBUILD_KEYS = ['seed', 'team', 'zoom'];
@@ -165,6 +200,7 @@ function applySettings(data) {
     else if (REBUILD_KEYS.includes(k)) needRebuild = true;
     else if (LAYOUT_KEYS.includes(k)) needLayout = true;
     else if (k === 'fog') needFog = true;
+    else if (k === 'daynight' || k === 'events') sky.tick = 0; // le ciel se met à jour tout de suite
   }
   if (needTheme) switchTheme(S.theme);
   else if (needRebuild) rebuild();
@@ -204,6 +240,7 @@ boot.then(() => {
     if (query.has('empty')) onMessage({ type: 'icons', rects: [] });
     else demo.layoutDefault(window.innerWidth, window.innerHeight, query.get('layout'));
   }
+  if (query.has('skip')) advance(Number(query.get('skip')) || 0);
   requestAnimationFrame(frame);
 });
 
@@ -215,4 +252,4 @@ function bench(n = 60) {
   return (performance.now() - t0) / n;
 }
 
-window.__fief = { S, field, stats, bench, get world() { return world; }, get scene() { return scene; }, get agents() { return agents; }, get scale() { return { Z, K, W, H }; }, get theme() { return theme; }, onMessage, rebuild };
+window.__fief = { S, field, stats, bench, advance, sky, get events() { return events; }, get world() { return world; }, get scene() { return scene; }, get agents() { return agents; }, get scale() { return { Z, K, W, H }; }, get theme() { return theme; }, onMessage, rebuild };
