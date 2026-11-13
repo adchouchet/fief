@@ -28,22 +28,22 @@ Les villageois coupent du bois, cultivent, minent et bâtissent ; les moutons
 broutent ; barques de pêche et navires marchands prennent la mer ; des chemins
 de terre relient le forum aux portes et aux ateliers.
 
-## Un monde qui vit
+## Le jour, la nuit et quelques surprises
 
-- **Le soir tombe.** Le jour et la nuit suivent l'heure de l'ordinateur. Au
-  crépuscule les fenêtres s'allument, on veille autour du feu, puis chacun
-  rentre dormir.
-- **Il se passe quelque chose.** De temps en temps, un seul événement à la
-  fois : un jour de fête, la charrette d'un marchand, le cortège du seigneur,
-  une maison en feu que le village éteint puis rebâtit, une baleine au large,
-  l'ombre d'un dragon.
-- **Le temps change.** L'ombre des nuages glisse sur les îles, le vent couche
-  l'herbe par rafales, et certains matins amènent la brume ou une pluie fine.
-- **Petite vie.** Poules, chiens et enfants animent les villages.
+- **La nuit.** Quand il fait nuit chez vous, il fait nuit sur votre bureau.
+  Les fenêtres s'allument, quelques villageois restent près du feu et les
+  autres vont se coucher.
+- **Les événements.** Un seul à la fois, et pas souvent : une fête sur la
+  place, un marchand avec sa charrette, le seigneur qui sort avec sa garde,
+  une maison qui prend feu (les villageois l'éteignent et la reconstruisent),
+  une baleine au large, et parfois l'ombre d'un dragon.
+- **La météo.** Des ombres de nuages passent sur les îles et le vent fait
+  bouger l'herbe. Certains jours il y a de la brume ou un peu de pluie.
+- Il y a aussi des poules, des chiens et des enfants dans les villages.
 
-Tout cela se règle ou se coupe, et ne coûte presque rien : le ciel est fait de
-calques que la carte graphique mélange seule, et chaque silhouette n'est
-dessinée qu'une fois avant d'être recopiée.
+La nuit et les événements se coupent dans les réglages. Côté performances,
+une image coûte à peu près autant qu'avant le jour, et moins la nuit puisque
+presque tout le monde dort.
 
 ## Cinq autres mondes sur itch.io
 

@@ -27,20 +27,21 @@ ones rise from their scaffolding.
 Villagers chop wood, farm, mine and build; sheep graze; fishing boats and
 merchant ships sail; dirt paths link the town hall to the gates and workshops.
 
-## A living world
+## Day, night and a few surprises
 
-- **Evening falls.** Day and night follow your computer's clock. At dusk the
-  windows light up, villagers gather round the fire, then go home to sleep.
-- **Something is happening.** Now and then, one event at a time: a festival,
-  a merchant's cart, the lord's procession, a house on fire that the village
-  puts out and rebuilds, a whale offshore, a dragon's shadow.
-- **The weather turns.** Cloud shadows drift over the islands, gusts ripple
-  through the grass, and some mornings bring mist or a light rain.
-- **Small lives.** Hens, dogs and children roam the villages.
+- **Night.** When it is night where you are, it is night on your desktop.
+  Windows light up, a few villagers stay by the fire and the others go to bed.
+- **Events.** One at a time, and not often: a festival on the square, a
+  merchant with his cart, the lord riding out with his guard, a house that
+  catches fire (the villagers put it out and rebuild it), a whale offshore,
+  and sometimes a dragon's shadow.
+- **Weather.** Cloud shadows pass over the islands and the wind moves the
+  grass. Some days there is mist or a bit of rain.
+- There are also hens, dogs and children in the villages.
 
-All of it can be tuned or switched off, and costs next to nothing: the sky is
-made of layers the graphics card blends on its own, and each little figure is
-drawn once, then copied.
+Night and events can be turned off in the settings. Performance-wise, a frame
+costs about the same as before by day, and less at night since almost
+everyone is asleep.
 
 ## Five more worlds on itch.io
 
